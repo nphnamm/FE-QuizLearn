@@ -11,7 +11,7 @@ import {
   logoutRequest,
   logoutSuccess,
 } from "./loginSlice";
-import { clearUser } from "../auth/authSlice";
+import { clearUser, fetchMeSuccess } from "../auth/authSlice";
 import { logoutApi } from "@/services/api/identityApi";
 const API_URL = "http://localhost:8000/api/v1";
 const loginApi = async (data: LoginPayload) => {
@@ -34,6 +34,7 @@ function* handleLogin(
         user,
       })
     );
+    yield put(fetchMeSuccess({ user, accessToken }));
   } catch (error: any) {
     yield put(loginFailure(error.response?.data?.message || "Login failed"));
   }

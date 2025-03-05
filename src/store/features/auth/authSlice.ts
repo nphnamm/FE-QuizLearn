@@ -10,8 +10,10 @@ const authSlice = createSlice({
       state.error = null;
     },
     fetchMeSuccess(state, action: PayloadAction<any>) {
-      state.user = action.payload;
+      state.isAuthenticated = true;
+      state.user = action.payload.user;
       state.loading = false;
+      state.token = action.payload.accessToken;
     },
     fetchMeFailure(state, action: PayloadAction<string>) {
       state.loading = false;

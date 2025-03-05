@@ -1,4 +1,4 @@
-// File: E:\Nam\FE-QuizLearn\src\app\(auth)\login\page.tsx
+// File: D:\Github\FE_QuizLearn\FE-QuizLearn\src\app\(auth)\login\page.tsx
 import * as entry from '../../../../../src/app/(auth)/login/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

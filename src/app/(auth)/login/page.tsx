@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { use, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
@@ -19,14 +19,15 @@ import {
 } from "@/components/ui/card";
 import type { AppDispatch, RootState } from "@/store/store";
 import { loginRequest } from "@/store/features/signIn/loginSlice";
+import { fetchMeRequest } from "@/store/features/auth/authSlice";
+import Protected from "@/hooks/useProtected";
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useDispatch<AppDispatch>();
-  const { isAuthenticated, accessToken, refreshToken, user } = useSelector(
-    (state: RootState) => state.login
-  );
+  const { user } = useSelector((state: RootState) => state.auth);
+
   useEffect(() => {
     if (searchParams?.get("registered")) {
       toast.success("Registration successful! Please sign in.");
@@ -44,21 +45,28 @@ export default function LoginPage() {
     console.log(email, password);
     try {
       await dispatch(loginRequest({ email, password }));
-      router.push("/dashboard");
     } catch (error) {
       console.log(error);
     }
   };
   useEffect(() => {
-    if (isAuthenticated) {
+    if (user) {
       router.push("/dashboard");
     }
-  });
+  }
+    , [user]);
+  useEffect(() => {
+    dispatch(fetchMeRequest());
+    if (user) {
+      router.push("/dashboard");
+    }
+  }, []);
+
+
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-primary-100 to-primary-200 dark:bg-black">
       <div className="absolute inset-0 bg-gradient-radial from-white/20 to-transparent dark:from-zinc-800/20 pointer-events-none" />
-
       <div className="w-full max-w-md px-4 z-10">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-primary-900 dark:text-white mb-2">

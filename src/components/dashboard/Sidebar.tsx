@@ -2,17 +2,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { LayoutGrid, Store, Box, Users, Settings, HelpCircle, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePathname } from "next/navigation";
 
 const mainMenuItems = [
-  { name: "Overview", icon: LayoutGrid, href: "/dashboard", current: true },
-  { name: "Store", icon: Store, href: "/store", current: false },
-  { name: "Product", icon: Box, href: "/product", current: false },
-  { name: "Customer", icon: Users, href: "/customer", current: false },
+  { name: "Overview", icon: LayoutGrid, href: "/dashboard" },
+  { name: "Folder", icon: Store, href: "/folder" },
+  { name: "Explore", icon: Box, href: "/explore" },
+  { name: "AI", icon: Users, href: "/ai" },
 ];
 
 const otherMenuItems = [
-  { name: "Setting", icon: Settings, href: "/settings", current: false },
-  { name: "Help Center", icon: HelpCircle, href: "/help", current: false },
+  { name: "Setting", icon: Settings, href: "/settings" },
+  { name: "Help Center", icon: HelpCircle, href: "/help" },
 ];
 
 interface SidebarProps {
@@ -21,6 +22,19 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onToggle }: SidebarProps) {
+  const pathName = usePathname();
+
+  // Cập nhật `current` cho mỗi item dựa trên pathname hiện tại
+  const updatedMainMenuItems = mainMenuItems.map((item) => ({
+    ...item,
+    current: pathName === item.href, // so sánh đường dẫn hiện tại với href của item
+  }));
+
+  const updatedOtherMenuItems = otherMenuItems.map((item) => ({
+    ...item,
+    current: pathName === item.href, // tương tự cho mục khác
+  }));
+
   return (
     <div className={cn(
       "bg-white h-screen fixed left-0 top-0 border-r border-gray-200 transition-all duration-300 z-30",
@@ -58,7 +72,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         <div className="mb-2">
           {isOpen && <p className="text-xs font-medium text-gray-400 px-4 mb-2">MAIN MENU</p>}
           <nav className="space-y-1">
-            {mainMenuItems.map((item) => (
+            {updatedMainMenuItems.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
@@ -82,7 +96,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         <div className="mt-8">
           {isOpen && <p className="text-xs font-medium text-gray-400 px-4 mb-2">OTHERS</p>}
           <nav className="space-y-1">
-            {otherMenuItems.map((item) => (
+            {updatedOtherMenuItems.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
@@ -129,4 +143,4 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
       )}
     </div>
   );
-} 
+}

@@ -2,9 +2,14 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useSelector } from "react-redux";
+import Protected from "@/hooks/useProtected";
 
 export default function Home() {
+  
+
   return (
+      
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
       <div className="z-10 max-w-5xl w-full items-center justify-between text-center">
         <h1 className="text-6xl font-bold mb-8">Welcome to QuizLearn</h1>

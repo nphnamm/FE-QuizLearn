@@ -1,29 +1,20 @@
 import { call, put, takeLatest, select } from "redux-saga/effects";
 import axios, { AxiosResponse } from "axios";
 import { fetchMeFailure, fetchMeRequest, fetchMeSuccess } from "./authSlice";
-import { logoutRequest } from "../signIn/loginSlice";
+import { loginSuccess, logoutRequest } from "../signIn/loginSlice";
 import { MeResponse } from "@/services/responses/identityResponse";
 
 const API_URL = "http://localhost:8000/api/v1";
-export const fetchMeApi = async (accessToken: string) => {
+export const fetchMeApi = async () => {
   return axios.get(`${API_URL}/auth/me`, { withCredentials: true });
 };
 
 function* handleFetchMe(): Generator<any, void, any> {
   try {
-    const state = yield select((state) => state.login);
-    const { accessToken } = state;
-
-    if (!accessToken) {
-      yield put(fetchMeFailure("No access token found"));
-      yield put(logoutRequest());
-      return;
-    }
-
     const response: AxiosResponse<MeResponse> = yield call(
-      fetchMeApi,
-      accessToken
+      fetchMeApi
     );
+    console.log('first',response)
     yield put(fetchMeSuccess(response.data));
   } catch (error: any) {
     yield put(

@@ -11,11 +11,12 @@ export interface User {
 }
 
 export interface AuthState {
-  success: boolean;
+  isAuthenticated: boolean;
   message: string;
   user: User | null;
   loading: boolean;
   error: string | null;
+  token?: string;
 }
 
 export interface UserState {
@@ -43,9 +44,10 @@ export interface MeResponse {
   email: string;
 }
 export const initialState: AuthState = {
-  success: false,
+  isAuthenticated: false,
   message: "",
   user: null,
   loading: false,
   error: null,
+  token: "",
 };
