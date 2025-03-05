@@ -15,7 +15,7 @@ import { clearUser } from "../auth/authSlice";
 import { logoutApi } from "@/services/api/identityApi";
 const API_URL = "http://localhost:8000/api/v1";
 const loginApi = async (data: LoginPayload) => {
-  return axios.post(`${API_URL}/auth/login`, data);
+  return axios.post(`${API_URL}/auth/login`, data, { withCredentials: true });
 };
 function* handleLogin(
   action: PayloadAction<LoginPayload>
@@ -25,12 +25,13 @@ function* handleLogin(
       loginApi,
       action.payload
     );
-    const { accessToken, refreshToken } = response.data;
+    const { accessToken, refreshToken, user } = response.data;
 
     yield put(
       loginSuccess({
         accessToken,
         refreshToken,
+        user,
       })
     );
   } catch (error: any) {

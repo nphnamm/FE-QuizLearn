@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { Button } from "@/components/ui/button";
-import { logout } from "@/store/features/signIn/loginSlice";
 import type { RootState, AppDispatch } from "@/store/store";
 import { Card } from "@/components/ui/card";
 import { DonutChart } from "@/components/charts/DonutChart";
@@ -16,6 +15,7 @@ import { Bell, Settings } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { fetchMeRequest } from "@/store/features/auth/authSlice";
 
 const navigationItems = [
   { name: "Dashboard", href: "/dashboard", current: true },
@@ -31,22 +31,19 @@ export default function DashboardPage() {
   const dispatch = useDispatch<AppDispatch>();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const { isLogin } = useSelector((state: RootState) => state.login);
-
+  const { isAuthenticated, accessToken, refreshToken, user } = useSelector(
+    (state: RootState) => state.login
+  );
+  console.log(accessToken);
+  console.log(refreshToken);
+  console.log(user);
+  console.log(isAuthenticated);
   useEffect(() => {
-    if (!isLogin) {
+    if (!isAuthenticated) {
       router.push("/login");
     }
-  }, [isLogin, router]);
-
-  const handleLogout = () => {
-    dispatch(logout());
-  };
-
-  if (!isLogin) {
-    return null;
-  }
-
+    dispatch(fetchMeRequest());
+  }, []);
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}

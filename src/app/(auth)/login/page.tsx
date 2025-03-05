@@ -24,7 +24,9 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useDispatch<AppDispatch>();
-
+  const { isAuthenticated, accessToken, refreshToken, user } = useSelector(
+    (state: RootState) => state.login
+  );
   useEffect(() => {
     if (searchParams?.get("registered")) {
       toast.success("Registration successful! Please sign in.");
@@ -42,11 +44,16 @@ export default function LoginPage() {
     console.log(email, password);
     try {
       await dispatch(loginRequest({ email, password }));
-      router.push("/");
+      router.push("/dashboard");
     } catch (error) {
       console.log(error);
     }
   };
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/dashboard");
+    }
+  });
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-primary-100 to-primary-200 dark:bg-black">

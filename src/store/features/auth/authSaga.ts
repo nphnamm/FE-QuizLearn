@@ -4,15 +4,14 @@ import { fetchMeFailure, fetchMeRequest, fetchMeSuccess } from "./authSlice";
 import { logoutRequest } from "../signIn/loginSlice";
 import { MeResponse } from "@/services/responses/identityResponse";
 
-const fetchMeApi = (accessToken: string) => {
-  return axios.get("YOUR_API_ENDPOINT/me", {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+const API_URL = "http://localhost:8000/api/v1";
+export const fetchMeApi = async (accessToken: string) => {
+  return axios.get(`${API_URL}/auth/me`, { withCredentials: true });
 };
 
 function* handleFetchMe(): Generator<any, void, any> {
   try {
-    const state = yield select((state) => state.auth);
+    const state = yield select((state) => state.login);
     const { accessToken } = state;
 
     if (!accessToken) {
