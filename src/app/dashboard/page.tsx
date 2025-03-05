@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { Button } from "@/components/ui/button";
-import { logout } from "@/store/features/auth/loginSlice";
+import { logout } from "@/store/features/signIn/loginSlice";
 import type { RootState, AppDispatch } from "@/store/store";
 import { Card } from "@/components/ui/card";
 import { DonutChart } from "@/components/charts/DonutChart";
@@ -47,15 +47,15 @@ export default function DashboardPage() {
     return null;
   }
 
-
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className={cn(
-        "bg-white border-b border-gray-200 fixed top-0 right-0 z-40 transition-all duration-300",
-        isSidebarOpen ? "left-64" : "left-20"
-      )}>
+      <header
+        className={cn(
+          "bg-white border-b border-gray-200 fixed top-0 right-0 z-40 transition-all duration-300",
+          isSidebarOpen ? "left-64" : "left-20"
+        )}
+      >
         <div className="px-6">
           <div className="flex h-16 items-center justify-between">
             {/* Left side with logo and navigation */}
@@ -74,7 +74,6 @@ export default function DashboardPage() {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-
                       strokeWidth={2}
                       d="M4 6h16M4 12h16M4 18h16"
                     />
@@ -89,7 +88,6 @@ export default function DashboardPage() {
                 </svg>
               </button>
               <Link href="/dashboard" className="flex items-center gap-2">
-
                 <Image
                   src="/fusion-logo.svg"
                   alt="Fusion"
@@ -141,13 +139,18 @@ export default function DashboardPage() {
       </header>
 
       {/* Sidebar */}
-      <Sidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+      />
 
       {/* Main Content */}
-      <div className={cn(
-        "transition-all duration-300 pt-16",
-        isSidebarOpen ? "pl-64" : "pl-20"
-      )}>
+      <div
+        className={cn(
+          "transition-all duration-300 pt-16",
+          isSidebarOpen ? "pl-64" : "pl-20"
+        )}
+      >
         <div className="bg-[#1a1a1a] text-white min-h-screen">
           <div className="max-w-[1400px] mx-auto p-8 space-y-8">
             {/* Dashboard Header */}
@@ -168,18 +171,25 @@ export default function DashboardPage() {
               <Card className="bg-[#2a2a2a]/50 backdrop-blur p-6">
                 <h2 className="text-xl font-medium mb-4">Summary</h2>
                 <div className="space-y-3">
-                  {["Overview", "Campaigns", "Ad Group", "Keywords"].map((item) => (
-                    <div key={item} className="flex items-center justify-between bg-[#3a3a3a]/50 p-3 rounded-lg">
-                      <span className="text-gray-300">{item}</span>
-                      <span>1,552</span>
-                    </div>
-                  ))}
+                  {["Overview", "Campaigns", "Ad Group", "Keywords"].map(
+                    (item) => (
+                      <div
+                        key={item}
+                        className="flex items-center justify-between bg-[#3a3a3a]/50 p-3 rounded-lg"
+                      >
+                        <span className="text-gray-300">{item}</span>
+                        <span>1,552</span>
+                      </div>
+                    )
+                  )}
                 </div>
               </Card>
 
               {/* Top 5 Products Card */}
               <Card className="bg-[#2a2a2a]/50 backdrop-blur p-6">
-                <h2 className="text-xl font-medium mb-4">Top 5 products by spend</h2>
+                <h2 className="text-xl font-medium mb-4">
+                  Top 5 products by spend
+                </h2>
                 <div className="relative h-[200px]">
                   <DonutChart
                     data={[
@@ -194,7 +204,9 @@ export default function DashboardPage() {
 
               {/* Highest ACoS Campaigns */}
               <Card className="bg-[#2a2a2a]/50 backdrop-blur p-6">
-                <h2 className="text-xl font-medium mb-4">Highest ACoS campaigns</h2>
+                <h2 className="text-xl font-medium mb-4">
+                  Highest ACoS campaigns
+                </h2>
                 <CampaignTable />
               </Card>
             </div>
@@ -244,19 +256,13 @@ export default function DashboardPage() {
               <Card className="bg-[#2a2a2a]/50 backdrop-blur p-6">
                 <h2 className="text-xl font-medium mb-4">Costs</h2>
                 <div className="h-[200px]">
-                  <LineChart
-                    data={[4, 6, 5, 7, 5, 8, 6, 4]}
-                    color="#4ade80"
-                  />
+                  <LineChart data={[4, 6, 5, 7, 5, 8, 6, 4]} color="#4ade80" />
                 </div>
               </Card>
               <Card className="bg-[#2a2a2a]/50 backdrop-blur p-6">
                 <h2 className="text-xl font-medium mb-4">ACoS vs TACoS</h2>
                 <div className="h-[200px]">
-                  <LineChart
-                    data={[5, 7, 6, 8, 7, 9, 8, 6]}
-                    color="#fbbf24"
-                  />
+                  <LineChart data={[5, 7, 6, 8, 7, 9, 8, 6]} color="#fbbf24" />
                 </div>
               </Card>
             </div>

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Github } from "lucide-react";
 import Image from "next/image";
 import { useDispatch } from "react-redux";
-import { socialLogin } from "@/store/features/auth/loginSlice";
+import { socialLogin } from "@/store/features/signIn/loginSlice";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 const GITHUB_CLIENT_ID = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;

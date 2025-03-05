@@ -17,20 +17,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { login } from "@/store/features/auth/loginSlice";
 import type { AppDispatch, RootState } from "@/store/store";
+import { loginRequest } from "@/store/features/signIn/loginSlice";
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useDispatch<AppDispatch>();
-  const { isLogin } = useSelector((state: RootState) => state.login);
-
-  useEffect(() => {
-    if (isLogin) {
-      router.push("/dashboard");
-    }
-  }, [isLogin, router]);
 
   useEffect(() => {
     if (searchParams?.get("registered")) {
@@ -46,19 +39,13 @@ export default function LoginPage() {
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
-
-    dispatch(
-      login({
-        data: { email, password },
-        callback: () => {
-          toast.success("Signed in successfully!");
-          router.push("/dashboard");
-        },
-        callBackError: (code: string, message: string) => {
-          toast.error(message || "Failed to sign in");
-        },
-      })
-    );
+    console.log(email, password);
+    try {
+      await dispatch(loginRequest({ email, password }));
+      router.push("/");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (

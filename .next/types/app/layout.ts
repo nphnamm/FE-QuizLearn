@@ -1,4 +1,4 @@
-// File: D:\Github\FE_QuizLearn\QuizLearn-FE\src\app\layout.tsx
+// File: E:\Nam\FE-QuizLearn\src\app\layout.tsx
 import * as entry from '../../../src/app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

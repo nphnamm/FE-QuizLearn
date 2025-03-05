@@ -8,7 +8,6 @@ export interface LoginAuthRsp {
   };
 }
 
-
 export type RegistrationResponse = {
   succues?: boolean;
   message?: string;
@@ -16,6 +15,11 @@ export type RegistrationResponse = {
 };
 
 export type VerifyEmailResponse = {
+  success: boolean;
+  user: BaseUserRsp;
+};
+
+export type MeResponse = {
   success: boolean;
   user: BaseUserRsp;
 };

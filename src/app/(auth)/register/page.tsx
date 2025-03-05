@@ -20,7 +20,10 @@ import { registerApi, verifyEmailApi } from "@/services/api/identityApi";
 import userService from "@/services/identityService";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
-import { saveRegisterInfo, verificationEmail } from "@/store/features/signUp/signUpSlice";
+import {
+  saveRegisterInfo,
+  verificationEmail,
+} from "@/store/features/signUp/signUpSlice";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -28,11 +31,9 @@ export default function RegisterPage() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
   const dispatch = useDispatch();
-  const { token ,user } = useSelector((state: RootState) => state.signUp);
-  const { isLogin } = useSelector((state: RootState) => state.login);
+  const { token, user } = useSelector((state: RootState) => state.signUp);
 
-  console.log(user)
-  console.log(isLogin)
+  console.log(user);
   const handleOtpChange = (index: number, value: string) => {
     if (value.length > 1) {
       value = value[0];
@@ -72,21 +73,18 @@ export default function RegisterPage() {
 
     try {
       const response = await userService.register({ email, password });
-      console.log(response)
+      console.log(response);
       if (response.success) {
         toast.success(response.message);
         dispatch(saveRegisterInfo(response));
         setIsOtpSent(true);
-
       } else {
         toast.error(response.message);
       }
-
     } catch (err) {
       toast.error("An error occurred during registration");
     }
   };
- 
 
   const handleResendOtp = async () => {
     const formData = new FormData(
@@ -114,7 +112,7 @@ export default function RegisterPage() {
       toast.error("An error occurred while resending verification code");
     }
   };
-  console.log('token',token)
+  console.log("token", token);
 
   const verifyOtp = async () => {
     const otpValue = otp.join("");
@@ -124,20 +122,22 @@ export default function RegisterPage() {
     }
 
     try {
-      console.log('token',token)
-      console.log('otpValue',otpValue)
-      const response = await userService.verifyEmail({ activation_code: otpValue,activation_token:token });
-
-      if (response.success) {
-        toast.success("Email verified successfully!");
-        dispatch(verificationEmail(response.data));
-        router.push("/");
+      console.log("token", token);
+      console.log("otpValue", otpValue);
+      const response = await userService.verifyEmail({
+        activation_code: otpValue,
+        activation_token: token,
+      });
+      console.log(response);
+      if (response.success == true) {
+        toast.success("Email veverificationEmailrified successfully!");
+        router.push("/login");
       } else {
         const data = response.data;
         toast.error(data.message || "Verification failed");
       }
     } catch (err) {
-      toast.error("An error occurred during verification");
+      console.log(err);
     }
   };
 
