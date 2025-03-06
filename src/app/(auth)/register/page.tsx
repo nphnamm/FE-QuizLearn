@@ -16,24 +16,23 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { registerApi, verifyEmailApi } from "@/services/api/identityApi";
-import userService from "@/services/identityService";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/store/store";
 import {
-  saveRegisterInfo,
-  verificationEmail,
-} from "@/store/features/signUp/signUpSlice";
+  useActivationMutation,
+  useRegistrationMutation,
+} from "../../../../redux/features/auth/authApi";
+import { useSelector } from "react-redux";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const dispatch = useDispatch();
-  const { token, user } = useSelector((state: RootState) => state.signUp);
+  const [register, { isError, data, isSuccess, error }] =
+    useRegistrationMutation();
+  const [activation, { isSuccess: activationSuccess, error: activationError }] =
+    useActivationMutation();
+  const { token } = useSelector((state: any) => state.auth);
 
-  console.log(user);
   const handleOtpChange = (index: number, value: string) => {
     if (value.length > 1) {
       value = value[0];
@@ -72,47 +71,15 @@ export default function RegisterPage() {
     }
 
     try {
-      const response = await userService.register({ email, password });
-      console.log(response);
-      if (response.success) {
-        toast.success(response.message);
-        dispatch(saveRegisterInfo(response));
-        setIsOtpSent(true);
-      } else {
-        toast.error(response.message);
-      }
+      const data = {
+        email,
+        password,
+      };
+      await register(data);
     } catch (err) {
       toast.error("An error occurred during registration");
     }
   };
-
-  const handleResendOtp = async () => {
-    const formData = new FormData(
-      document.querySelector("form") as HTMLFormElement
-    );
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-
-    try {
-      const response = await fetch("/api/auth/resend-otp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (response.ok) {
-        toast.success("Verification code resent to your email");
-      } else {
-        const data = await response.json();
-        toast.error(data.message || "Failed to resend verification code");
-      }
-    } catch (err) {
-      toast.error("An error occurred while resending verification code");
-    }
-  };
-  console.log("token", token);
 
   const verifyOtp = async () => {
     const otpValue = otp.join("");
@@ -124,22 +91,44 @@ export default function RegisterPage() {
     try {
       console.log("token", token);
       console.log("otpValue", otpValue);
-      const response = await userService.verifyEmail({
-        activation_code: otpValue,
+      await activation({
         activation_token: token,
+        activation_code: otpValue,
       });
-      console.log(response);
-      if (response.success == true) {
-        toast.success("Email veverificationEmailrified successfully!");
-        router.push("/login");
-      } else {
-        const data = response.data;
-        toast.error(data.message || "Verification failed");
-      }
     } catch (err) {
       console.log(err);
     }
   };
+
+  useEffect(() => {
+    if (isSuccess) {
+      const message = data?.message || "Registration Successfully";
+      toast.success(message);
+      setIsOtpSent(true);
+    }
+    if (error) {
+      if ("data" in error) {
+        const errorData = error as any;
+        toast.error(errorData.data.message);
+      }
+    }
+  }, [isSuccess, error]);
+
+  useEffect(() => {
+    if (activationSuccess) {
+      toast.success("Account Activated successfully");
+
+      router.push("/login");
+    }
+    if (activationError) {
+      if ("data" in activationError) {
+        const errorData = error as any;
+        toast.error(errorData.data.message);
+      } else {
+        // console.log('An error occured', error);
+      }
+    }
+  }, [activationSuccess, activationError]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-primary-100 to-primary-200 dark:bg-black">
@@ -280,7 +269,6 @@ export default function RegisterPage() {
                 <div className="text-sm text-center text-primary-600 dark:text-zinc-400">
                   Didn't receive the code?{" "}
                   <button
-                    onClick={handleResendOtp}
                     type="button"
                     className="text-primary-700 hover:text-primary-800 dark:text-zinc-300 dark:hover:text-white font-semibold hover:underline"
                   >

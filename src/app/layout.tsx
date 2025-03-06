@@ -1,5 +1,4 @@
 "use client";
-
 import type { Metadata } from "next";
 import { Inter, Josefin_Sans, Poppins } from "next/font/google";
 import "./globals.css";
@@ -12,6 +11,7 @@ import { useEffect, useState } from "react";
 import Loader from "@/components/loader/Loader";
 import { useSelector } from "react-redux";
 import ErrorBoundary from "@/hooks/errorBoundary";
+import { useLoadUserQuery } from "../../redux/features/api/apiSlice";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -36,9 +36,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body className={inter.className}>
         <ReduxProvider>
           <ThemeProvider
@@ -60,14 +59,8 @@ export default function RootLayout({
 }
 
 const Custom: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, isAuthenticated, loading } = useSelector((state: any) => state.auth);
-  const [isLoading, setIsLoading] = useState(loading);
-  useEffect(() => {
-    if (isAuthenticated === undefined) {
-      <Loader />;
-    }
-    setIsLoading(false);
-  }, []);
+  const { isLoading } = useLoadUserQuery({});
+
   return (
     <>
       <ErrorBoundary>{isLoading ? <Loader /> : <>{children}</>}</ErrorBoundary>
