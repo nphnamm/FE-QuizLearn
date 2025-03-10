@@ -23,6 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useGetSetByFolderIdQuery } from "../../../../redux/features/sets/setsApi";
 const navigationItems = [
   { name: "Dashboard", href: "/dashboard", current: true },
   { name: "Project", href: "/project", current: false },
@@ -56,6 +57,9 @@ export default function DashboardPage() {
   const id = params.id;
   console.log(id, "id");
   const [sets, setSets] = useState<any>([]);
+  const {data,isLoading, isError } = useGetSetByFolderIdQuery(id, {});
+  console.log(data, "data");
+  
   useEffect(() => {
     const foundItem = mockData.find((item: any) => item.id == id);
     if (foundItem) {
@@ -64,6 +68,11 @@ export default function DashboardPage() {
       setSets([]); // Nếu không tìm thấy, đặt là mảng rỗng để tránh lỗi
     }
   }, [id]);
+  useEffect(() => {
+    if (data?.sets) {
+      setSets(data.sets);
+    }
+  }, [data]);
   const handleCreateSet = () => {
     router.push(`/create-set?folderId=${id}`);
   }
@@ -231,10 +240,11 @@ export default function DashboardPage() {
                     <div
                       key={index}
                       className="flex justify-between items-center p-2 hover:bg-gray-100 rounded-md bg-teal-600 hover:bg-teal-500 transition-colors"
+                      onClick={() => router.push(`/set/${set.id}`)}
                     >
                       <div className="flex items-center gap-2">
-                        {set.icon}
-                        <span>{set.name}</span>
+                        
+                        <span>{set.title}</span>
                       </div>
 
                       <DropdownMenu>

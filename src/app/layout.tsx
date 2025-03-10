@@ -63,7 +63,7 @@ const Custom: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <>
-      <ErrorBoundary>{isLoading ? <Loader /> : <>{children}</>}</ErrorBoundary>
+      <ErrorBoundary>{isLoading ? <Loader /> : <>{children} </>}</ErrorBoundary>
     </>
   );
 };

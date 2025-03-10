@@ -4,29 +4,37 @@ export const setsApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         createSet: builder.mutation({
             query: (data) => ({
-                url: `create-set`,
+                url: `set/create-set`,
                 method: "POST",
+                body: data,
+                credentials: "include" as const,
+            }),
+        }),
+        updateSet: builder.mutation({
+            query: (data) => ({
+                url: `set/update-set/${data.id}`,
+                method: "PUT",
                 body: data,
                 credentials: "include" as const,
             }),
         }),
         getAllSets: builder.query({
             query: () => ({
-                url: "get-all-sets",
+                url: "set/get-all-sets",
                 method: "GET",
                 credentials: "include" as const,
             }),
         }),
-        getSetsByUserId: builder.mutation({
+        getSetsByUserId: builder.query({
             query: (id) => ({
-                url: `get-sets-by-userId`,
+                url: `set/get-sets-by-userId`,
                 method: "GET",
                 credentials: "include" as const,
             }),
         }),
-        getSetByFolderId: builder.mutation({
+        getSetByFolderId: builder.query({
             query: (id) => ({
-                url: `get-set-by-folderId/${id}`,
+                url: `set/get-sets-by-folderId/${id}`,
                 method: "GET",
                 credentials: "include" as const,
             }),
@@ -37,7 +45,8 @@ export const setsApi = apiSlice.injectEndpoints({
 
 export const {
     useCreateSetMutation,
+    useUpdateSetMutation,
     useGetAllSetsQuery,
-    useGetSetsByUserIdMutation,
-    useGetSetByFolderIdMutation,
+    useGetSetsByUserIdQuery,
+    useGetSetByFolderIdQuery,
 } = setsApi;

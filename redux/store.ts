@@ -10,15 +10,22 @@ export const store = configureStore({
     [apiSlice.reducerPath]: apiSlice.reducer,
     auth: authSlice,
   },
-  devTools: false,
+  devTools: process.env.NODE_ENV !== 'production',
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(apiSlice.middleware),
 });
 
 const initializeApp = async () => {
-  // await store.dispatch(apiSlice.endpoints.refreshToken.initiate({},{forceRefetch:true}));
-  await store.dispatch(
-    apiSlice.endpoints.loadUser.initiate({}, { forceRefetch: true })
-  );
+  try {
+    await store.dispatch(
+      apiSlice.endpoints.refreshToken.initiate({}, { forceRefetch: true })
+    );
+    
+    await store.dispatch(
+      apiSlice.endpoints.loadUser.initiate({}, { forceRefetch: true })
+    );
+  } catch (error) {
+    console.error("Failed to initialize authentication:", error);
+  }
 };
 initializeApp();
