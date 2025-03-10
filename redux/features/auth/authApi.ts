@@ -1,5 +1,6 @@
 import { apiSlice } from "../api/apiSlice";
 import { userLoggedIn, userLoggedOut, userRegistration } from "./authSlice";
+import { startTokenRefreshTimer } from "../../../src/utils/apiClient";
 
 type RegistrationResponse = {
   succues: boolean;
@@ -66,6 +67,9 @@ export const authApi = apiSlice.injectEndpoints({
               user: result?.data.user,
             })
           );
+          
+          // Start the token refresh timer after login
+          startTokenRefreshTimer();
         } catch (error: any) {
           // console.log(error);
         }

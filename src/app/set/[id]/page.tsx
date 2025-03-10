@@ -20,6 +20,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { useCreateOrUpdateUserSessionMutation, useGetRandomAnswerChoicesQuery } from "../../../../redux/features/userSessions/userSessionsApi";
+import { useUpdateProgressMutation } from "../../../../redux/features/userProgresses/userProgressesApi";
 
 type StudyMode = "flashcards" | "learn" | "test";
 type LearnMode = "multiple-choice" | "write" | "flashcard";
@@ -43,7 +44,7 @@ export default function StudySetPage() {
   const params = useParams();
   const id = params.id;
   const { data, isLoading } = useGetCardBySetIdQuery(id, {});
-  
+
   const [currentMode, setCurrentMode] = useState<StudyMode>("flashcards");
   const [learnMode, setLearnMode] = useState<LearnMode>("multiple-choice");
   const [showModeSelector, setShowModeSelector] = useState(false);
@@ -61,7 +62,7 @@ export default function StudySetPage() {
   const [userSessionId, setUserSessionId] = useState<string | null>(null);
   const [totalCorrect, setTotalCorrect] = useState(0);
   const [createOrUpdateUserSession, { isLoading: isCreatingUserSession }] = useCreateOrUpdateUserSessionMutation();
-
+  const [updateProgress, { isLoading: isUpdatingProgress }] = useUpdateProgressMutation();
   const { data: answerChoicesData, isLoading: isLoadingAnswerChoices } = useGetRandomAnswerChoicesQuery(
     { setId: id, cardId: cards[currentCardIndex]?.id },
     { skip: !cards[currentCardIndex]?.id }
@@ -79,9 +80,9 @@ export default function StudySetPage() {
       const response = await createOrUpdateUserSession({
         userId: user.id,
         setId: id,
-        mode: learnMode
       });
-      
+      console.log('response', response)
+
       // Assuming the response has a data field with sessionId
       return response.data?.sessionId;
     } catch (error) {
@@ -137,11 +138,10 @@ export default function StudySetPage() {
   // Update user progress
   const updateUserProgress = async (isCorrect: boolean) => {
     try {
-      await createOrUpdateUserSession({
+      await updateProgress({
         sessionId: userSessionId,
         cardId: cards[currentCardIndex].id,
         isCorrect,
-        timeSpent: 0 // You could track time spent on each card
       });
     } catch (error) {
       console.error("Failed to update user progress:", error);
@@ -177,7 +177,7 @@ export default function StudySetPage() {
   const handleLearnModeSelect = async (mode: LearnMode) => {
     setLearnMode(mode);
     setShowModeSelector(false);
-    
+
     // Reset state for new mode
     setCurrentCardIndex(0);
     setLearningProgress({});
@@ -197,7 +197,7 @@ export default function StudySetPage() {
 
   const handleNextCard = () => {
     if (!cards || cards.length === 0) return;
-    
+
     // Add transition effect when changing cards
     setShowContent(false);
     setTimeout(() => {
@@ -209,7 +209,7 @@ export default function StudySetPage() {
 
   const handlePrevCard = () => {
     if (!cards || cards.length === 0) return;
-    
+
     // Add transition effect when changing cards
     setShowContent(false);
     setTimeout(() => {
@@ -242,21 +242,21 @@ export default function StudySetPage() {
 
   const handleMultipleChoiceSubmit = async () => {
     if (!selectedAnswer) return;
-    
+
     setAnswerSubmitted(true);
     const selectedChoice = currentAnswerChoices.find(choice => choice.id === selectedAnswer);
     const isCorrect = selectedChoice?.isCorrect || false;
-    
+
     if (isCorrect) {
       setTotalCorrect(prev => prev + 1);
     }
-    
+
     // Update the learning progress
     setLearningProgress(prev => ({
       ...prev,
       [currentCardIndex]: isCorrect ? 'correct' : 'incorrect'
     }));
-    
+
     // Update user progress via API
     await updateUserProgress(isCorrect);
   };
@@ -323,10 +323,10 @@ export default function StudySetPage() {
           isSidebarOpen ? "ml-64" : "ml-20"
         )}>
           <div className="max-w-4xl mx-auto">
-            <Tabs 
-              defaultValue="flashcards" 
+            <Tabs
+              defaultValue="flashcards"
               className="w-full"
-              onValueChange={(value) => handleModeChange(value as StudyMode)}
+              onValueChange={(value: any) => handleModeChange(value)}
             >
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="flashcards">Flashcards</TabsTrigger>
@@ -346,7 +346,7 @@ export default function StudySetPage() {
                       onClick={handleFlipCard}
                     >
                       <CardContent className="flex items-center justify-center h-full">
-                        {isFlipped 
+                        {isFlipped
                           ? <span>{cards[currentCardIndex]?.definition || "No definition available"}</span>
                           : <span>{cards[currentCardIndex]?.term || "No term available"}</span>
                         }
@@ -378,13 +378,13 @@ export default function StudySetPage() {
                             {cards.map((card, idx) => {
                               const result = learningProgress[idx];
                               return (
-                                <div 
-                                  key={card.id} 
+                                <div
+                                  key={card.id}
                                   className={cn(
                                     "p-4 rounded-lg",
                                     result === 'correct' ? "bg-green-50 border border-green-200" :
-                                    result === 'incorrect' ? "bg-red-50 border border-red-200" :
-                                    "bg-gray-50 border border-gray-200"
+                                      result === 'incorrect' ? "bg-red-50 border border-red-200" :
+                                        "bg-gray-50 border border-gray-200"
                                   )}
                                 >
                                   <p className="font-medium">{card.term}</p>
@@ -392,12 +392,12 @@ export default function StudySetPage() {
                                   <p className={cn(
                                     "mt-2 text-sm",
                                     result === 'correct' ? "text-green-600" :
-                                    result === 'incorrect' ? "text-red-600" :
-                                    "text-gray-600"
+                                      result === 'incorrect' ? "text-red-600" :
+                                        "text-gray-600"
                                   )}>
-                                    {result === 'correct' ? "Correct" : 
-                                     result === 'incorrect' ? "Incorrect" : 
-                                     "Skipped"}
+                                    {result === 'correct' ? "Correct" :
+                                      result === 'incorrect' ? "Incorrect" :
+                                        "Skipped"}
                                   </p>
                                 </div>
                               );
@@ -435,17 +435,17 @@ export default function StudySetPage() {
                             {Object.values(learningProgress).filter(p => p === 'correct').length} correct
                           </div>
                         </div>
-                        
+
                         <h2 className="text-xl font-bold mb-6">{cards[currentCardIndex]?.term || "No term available"}</h2>
-                        
+
                         {isLoadingChoices || isLoadingAnswerChoices ? (
                           <div className="flex justify-center py-8">
                             <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
                           </div>
                         ) : (
-                          <RadioGroup 
-                            className="space-y-4" 
-                            value={selectedAnswer || ""} 
+                          <RadioGroup
+                            className="space-y-4"
+                            value={selectedAnswer || ""}
                             onValueChange={setSelectedAnswer}
                             disabled={answerSubmitted}
                           >
@@ -453,9 +453,9 @@ export default function StudySetPage() {
                               const isSelected = selectedAnswer === choice.id;
                               const showResult = answerSubmitted;
                               const isCorrect = choice.isCorrect;
-                              
+
                               return (
-                                <div 
+                                <div
                                   key={choice.id}
                                   className={cn(
                                     "flex items-start space-x-2 p-4 rounded-lg border",
@@ -466,8 +466,8 @@ export default function StudySetPage() {
                                   )}
                                 >
                                   <RadioGroupItem value={choice.id} id={choice.id} />
-                                  <Label 
-                                    htmlFor={choice.id} 
+                                  <Label
+                                    htmlFor={choice.id}
                                     className={cn(
                                       "flex-grow",
                                       showResult && isCorrect ? "text-green-700 font-medium" : "",
@@ -487,7 +487,7 @@ export default function StudySetPage() {
                             })}
                           </RadioGroup>
                         )}
-                        
+
                         <div className="mt-6 flex gap-4 justify-end">
                           {!answerSubmitted ? (
                             <Button
@@ -506,7 +506,7 @@ export default function StudySetPage() {
                     )}
                   </div>
                 )}
-                
+
                 {learnMode === 'flashcard' && (
                   <div className="flex flex-col items-center">
                     <Card className="w-full max-w-2xl p-6">
@@ -539,7 +539,7 @@ export default function StudySetPage() {
                     </div>
                   </div>
                 )}
-                
+
                 {learnMode === 'write' && (
                   <div className="flex flex-col items-center">
                     <Card className="w-full max-w-2xl p-6">
@@ -617,11 +617,11 @@ export default function StudySetPage() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  <RadioGroup 
-                    defaultValue="multiple-choice" 
+                  <RadioGroup
+                    defaultValue="multiple-choice"
                     className="grid grid-cols-1 gap-4"
                     value={learnMode}
-                    onValueChange={(value) => setLearnMode(value as LearnMode)}
+                    onValueChange={(value: LearnMode) => setLearnMode(value)}
                   >
                     <div className="flex items-center space-x-2 border p-4 rounded-lg hover:bg-gray-50 cursor-pointer">
                       <RadioGroupItem value="multiple-choice" id="multiple-choice" />
@@ -645,10 +645,10 @@ export default function StudySetPage() {
                       </Label>
                     </div>
                   </RadioGroup>
-                  
+
                   <div className="flex justify-end mt-4">
-                    <Button 
-                      className="px-8" 
+                    <Button
+                      className="px-8"
                       onClick={() => handleLearnModeSelect(learnMode)}
                     >
                       Start
@@ -659,17 +659,21 @@ export default function StudySetPage() {
             </Dialog>
 
             {/* Display All Cards Below the Tabs */}
-            <div className="mt-8">
-              <h2 className="text-2xl font-semibold mb-4">All Cards</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {cards.map((card) => (
-                  <Card key={card.id} className="p-4">
-                    <h3 className="text-lg font-semibold">{card.term}</h3>
-                    <p className="text-gray-600">{card.definition}</p>
-                  </Card>
-                ))}
-              </div>
-            </div>
+            {
+              currentMode !== 'learn' && currentMode !== 'test' && (
+                <div className="mt-8">
+                  <h2 className="text-2xl font-semibold mb-4">All Cards</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {cards.map((card) => (
+                      <Card key={card.id} className="p-4">
+                        <h3 className="text-lg font-semibold">{card.term}</h3>
+                        <p className="text-gray-600">{card.definition}</p>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )
+            }
           </div>
         </main>
       </div>

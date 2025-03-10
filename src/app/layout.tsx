@@ -12,6 +12,7 @@ import Loader from "@/components/loader/Loader";
 import { useSelector } from "react-redux";
 import ErrorBoundary from "@/hooks/errorBoundary";
 import { useLoadUserQuery } from "../../redux/features/api/apiSlice";
+import AuthProvider from "@/providers/AuthProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -47,8 +48,9 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <SidebarProvider>
-              <Custom>{children}</Custom>
-
+              <AuthProvider>
+                <Custom>{children}</Custom>
+              </AuthProvider>
               <Toaster />
             </SidebarProvider>
           </ThemeProvider>
