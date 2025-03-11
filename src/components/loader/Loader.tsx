@@ -1,13 +1,21 @@
-"use client";
-import React from "react";
-import "./Loader.css";
+import { useEffect, useState } from "react";
 
 function Loader() {
-    return (
-        <div className="flex justify-center items-center h-screen">
-            <div className="loader"></div>
-        </div>
-    );
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return null;
+  }
+
+  return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="loader"></div>
+    </div>
+  );
 }
 
 export default Loader;
