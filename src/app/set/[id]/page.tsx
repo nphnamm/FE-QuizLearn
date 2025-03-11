@@ -20,7 +20,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { useCreateOrUpdateUserSessionMutation, useGetRandomAnswerChoicesQuery } from "../../../../redux/features/userSessions/userSessionsApi";
-import { useUpdateProgressMutation } from "../../../../redux/features/userProgresses/userProgressesApi";
+import { useRestartSessionMutation, useUpdateProgressMutation } from "../../../../redux/features/userProgresses/userProgressesApi";
 
 type StudyMode = "flashcards" | "learn" | "test";
 type LearnMode = "multiple-choice" | "write" | "flashcard";
@@ -63,6 +63,9 @@ export default function StudySetPage() {
   const [totalCorrect, setTotalCorrect] = useState(0);
   const [createOrUpdateUserSession, { isLoading: isCreatingUserSession }] = useCreateOrUpdateUserSessionMutation();
   const [updateProgress, { isLoading: isUpdatingProgress }] = useUpdateProgressMutation();
+  const [restart, { isLoading: isRestarting }] = useRestartSessionMutation();
+
+  const [isCompletedSession, setIsCompletedSession] = useState(false);
   const { data: answerChoicesData, isLoading: isLoadingAnswerChoices } = useGetRandomAnswerChoicesQuery(
     { setId: id, cardId: cards[currentCardIndex]?.id },
     { skip: !cards[currentCardIndex]?.id }
@@ -82,14 +85,33 @@ export default function StudySetPage() {
         setId: id,
       });
       console.log('response', response)
+      setUserSessionId(response.data?.sessionId);
+      if (response.data?.remainingCards.length > 0) {
+        setCards(response.data?.remainingCards);
+      } else {
+        setIsCompletedSession(true);
+
+      }
 
       // Assuming the response has a data field with sessionId
-      return response.data?.sessionId;
     } catch (error) {
       console.error("Failed to create user session:", error);
       return null;
     }
   };
+  const handleStartOver = () => {
+    setIsCompletedSession(false);
+    setCurrentCardIndex(0);
+    setLearningProgress({});
+    setSelectedAnswer(null);
+    setAnswerSubmitted(false);
+    setTotalCorrect(0);
+    
+    restart({
+      sessionId: userSessionId,
+    });
+
+  }
 
   // Process the answer choices from the API response format
   const processAnswerChoices = (data: any) => {
@@ -186,8 +208,8 @@ export default function StudySetPage() {
     setTotalCorrect(0);
 
     if (mode === 'multiple-choice') {
-      const sessionId = await createUserSession();
-      setUserSessionId(sessionId);
+      const session = await createUserSession();
+      console.log('session', session)
       if (cards.length > 0) {
         setIsLoadingChoices(true);
         fetchAnswerChoices(cards[0].id);
@@ -276,12 +298,13 @@ export default function StudySetPage() {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
-  if (!cards || cards.length === 0) {
-    return <div className="flex items-center justify-center min-h-screen">No flashcards found in this set.</div>;
-  }
+  // if (!cards || cards.length === 0) {
+  //   return <div className="flex items-center justify-center min-h-screen">No flashcards found in this set.</div>;
+  // }
 
   return (
     <Protected>
+
       <div className="min-h-screen bg-gray-50">
         <header className={cn(
           "bg-white border-b border-gray-200 fixed top-0 right-0 z-40 transition-all duration-300",
@@ -413,17 +436,16 @@ export default function StudySetPage() {
                               setShowTestResults(false);
                               setTotalCorrect(0);
                               // Recreate session
-                              createUserSession().then(id => {
-                                setUserSessionId(id);
-                                if (cards.length > 0) {
-                                  fetchAnswerChoices(cards[0].id);
-                                }
-                              });
+                              setCards(cards)
                             }}
                           >
                             Start Over
                           </Button>
+
                         </Card>
+
+
+
                       </div>
                     ) : (
                       <Card className="w-full max-w-2xl p-6">
@@ -652,6 +674,29 @@ export default function StudySetPage() {
                       onClick={() => handleLearnModeSelect(learnMode)}
                     >
                       Start
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+                
+            <Dialog open={isCompletedSession} onOpenChange={setIsCompletedSession}>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>You have finished this set</DialogTitle>
+                  <DialogDescription>
+                    Would you like to start over?
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+   
+
+                  <div className="flex justify-end mt-4">
+                    <Button
+                      className="px-8"
+                      onClick={handleStartOver}
+                    >
+                      Start Over
                     </Button>
                   </div>
                 </div>
