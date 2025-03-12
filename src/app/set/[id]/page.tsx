@@ -110,7 +110,7 @@ export default function StudySetPage() {
         userId: user.id,
         setId: id,
       });
-      console.log("response", response);
+      // console.log("response", response);
       setUserSessionId(response.data?.sessionId);
       
       // Get remaining cards from session response
@@ -126,11 +126,11 @@ export default function StudySetPage() {
         setCards(remainingCards);
         setAnsweredCards(answered);
         
-        console.log("Answered cards:", answered.map((card: Card) => ({
-          term: card.term,
-          definition: card.definition,
-          position: card.position
-        })));
+        // console.log("Answered cards:", answered.map((card: Card) => ({
+        //   term: card.term,
+        //   definition: card.definition,
+        //   position: card.position
+        // })));
       }
       
       return response;
@@ -166,7 +166,7 @@ export default function StudySetPage() {
 
     return choices;
   };
-  console.log("answerChoicesData", answerChoicesData);
+  // console.log("answerChoicesData", answerChoicesData);
   // Fetch answer choices for multiple-choice mode
   const fetchAnswerChoices = async (cardId: string) => {
     setIsLoadingChoices(true);
@@ -297,12 +297,8 @@ export default function StudySetPage() {
     setTotalCorrect(0);
 
     if (mode === "multiple-choice") {
-      const session = await createUserSession();
-      console.log("session", session);
-      if (cards.length > 0) {
-        setIsLoadingChoices(true);
-        fetchAnswerChoices(cards[0].id);
-      }
+      // console.log("session", session);
+      router.push(`/set/learn/${id}`);
     }
   };
 
@@ -357,8 +353,8 @@ export default function StudySetPage() {
     if (!selectedAnswer) return;
 
     setAnswerSubmitted(true);
-    const selectedChoice = currentAnswerChoices.find(
-      (choice) => choice.id === selectedAnswer
+    const selectedChoice = answerChoicesData.choices.find(
+      (choice: any) => choice.id === selectedAnswer
     );
     const isCorrect = selectedChoice?.isCorrect || false;
 
@@ -395,13 +391,14 @@ export default function StudySetPage() {
       </div>
     );
   }
-  console.log("answeredCards", answeredCards);
-  // if (!cards || cards.length === 0) {
-  //   return <div className="flex items-center justify-center min-h-screen">No flashcards found in this set.</div>;
-  // }
-  console.log("answerChoicesData", answerChoicesData);
-  console.log("cards", cards);
-
+  // console.log("answeredCards", answeredCards);
+  // // if (!cards || cards.length === 0) {
+  // //   return <div className="flex items-center justify-center min-h-screen">No flashcards found in this set.</div>;
+  // // }
+  // console.log("answerChoicesData", answerChoicesData);
+  // console.log("cards", cards);
+  console.log('currentCardIndex', currentAnswerChoices)
+  console.log('first', answerChoicesData)
   return (
     <Protected>
       <div className="min-h-screen bg-gray-50">
@@ -498,343 +495,6 @@ export default function StudySetPage() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="learn" className="mt-6">
-                {learnMode === "multiple-choice"  && (
-                  <div className="flex flex-col items-center">
-                    {showTestResults ? (
-                      <div className="w-full max-w-2xl">
-                        <Card className="p-6">
-                          <h2 className="text-xl font-bold mb-4">
-                            Your Results
-                          </h2>
-                          <div className="text-center mb-6">
-                            <p className="text-3xl font-bold">
-                              {totalCorrect} / {cards.length + answeredCards.length}
-                            </p>
-                            <p className="text-gray-500">correct answers</p>
-                          </div>
-                          {/* Display answered cards */}
-                          {answeredCards.length > 0 && (
-                            <div className="mb-6">
-                              <h3 className="text-lg font-semibold mb-3">Completed Questions</h3>
-                              <div className="space-y-3">
-                                {answeredCards.map((card) => {
-                                  const result = learningProgress[cards.findIndex(c => c.id === card.id)];
-                                  return (
-                                    <div
-                                      key={card.id}
-                                      className={cn(
-                                        "p-4 rounded-lg",
-                                        result === "correct"
-                                          ? "bg-green-50 border border-green-200"
-                                          : result === "incorrect"
-                                          ? "bg-red-50 border border-red-200"
-                                          : "bg-gray-50 border border-gray-200"
-                                      )}
-                                    >
-                                      <p className="font-medium">{card.term}</p>
-                                      <p className="text-gray-600">{card.definition}</p>
-                                      <p
-                                        className={cn(
-                                          "mt-2 text-sm",
-                                          result === "correct"
-                                            ? "text-green-600"
-                                            : result === "incorrect"
-                                            ? "text-red-600"
-                                            : "text-gray-600"
-                                        )}
-                                      >
-                                        {result === "correct"
-                                          ? "Correct"
-                                          : result === "incorrect"
-                                          ? "Incorrect"
-                                          : "Skipped"}
-                                      </p>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
-                          {/* Display remaining cards */}
-                          <div className="space-y-4">
-                            {cards.map((card, idx) => {
-                              const result = learningProgress[idx];
-                              return (
-                                <div
-                                  key={card.id}
-                                  className={cn(
-                                    "p-4 rounded-lg",
-                                    result === "correct"
-                                      ? "bg-green-50 border border-green-200"
-                                      : result === "incorrect"
-                                      ? "bg-red-50 border border-red-200"
-                                      : "bg-gray-50 border border-gray-200"
-                                  )}
-                                >
-                                  <p className="font-medium">{card.term}</p>
-                                  <p className="text-gray-600">{card.definition}</p>
-                                  <p
-                                    className={cn(
-                                      "mt-2 text-sm",
-                                      result === "correct"
-                                        ? "text-green-600"
-                                        : result === "incorrect"
-                                        ? "text-red-600"
-                                        : "text-gray-600"
-                                    )}
-                                  >
-                                    {result === "correct"
-                                      ? "Correct"
-                                      : result === "incorrect"
-                                      ? "Incorrect"
-                                      : "Skipped"}
-                                  </p>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          <Button
-                            className="w-full mt-6"
-                            onClick={() => {
-                              setCurrentCardIndex(0);
-                              setLearningProgress({});
-                              setSelectedAnswer(null);
-                              setAnswerSubmitted(false);
-                              setShowTestResults(false);
-                              setTotalCorrect(0);
-                              // Recreate session
-                              setCards(cards);
-                            }}
-                          >
-                            Start Over
-                          </Button>
-                        </Card>
-                      </div>
-                    ) : (
-                      <Card className="w-full max-w-2xl p-6">
-                        <div className="flex justify-between items-center mb-6">
-                          <h3 className="text-lg font-semibold">
-                            Question {answeredCards.length + 1} of {data.sets.length}
-                          </h3>
-                          <div className="text-sm text-gray-500">
-                            {
-                              Object.values(learningProgress).filter(
-                                (p) => p === "correct"
-                              ).length
-                            }{" "}
-                            correct
-                          </div>
-                        </div>
-
-                        <h2 className="text-xl font-bold mb-6">
-                          {answerChoicesData?.question?.term || "No term available"}
-                        </h2>
-
-                        {isLoadingChoices || isLoadingAnswerChoices ? (
-                          <div className="flex justify-center py-8">
-                            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-                          </div>
-                        ) : (
-                          <RadioGroup
-                            className="space-y-4"
-                            value={selectedAnswer || ""}
-                            onValueChange={setSelectedAnswer}
-                            disabled={answerSubmitted}
-                          >
-                            {currentAnswerChoices.map((choice) => {
-                              const isSelected = selectedAnswer === choice.id;
-                              const showResult = answerSubmitted;
-                              const isCorrect = choice.isCorrect;
-
-                              return (
-                                <div
-                                  key={choice.id}
-                                  className={cn(
-                                    "flex items-start space-x-2 p-4 rounded-lg border",
-                                    !showResult && isSelected
-                                      ? "border-blue-500 bg-blue-50"
-                                      : "border-gray-200",
-                                    showResult && isSelected && isCorrect
-                                      ? "border-green-500 bg-green-50"
-                                      : "",
-                                    showResult && isSelected && !isCorrect
-                                      ? "border-red-500 bg-red-50"
-                                      : "",
-                                    showResult && !isSelected && isCorrect
-                                      ? "border-green-500 bg-green-50"
-                                      : ""
-                                  )}
-                                >
-                                  <RadioGroupItem
-                                    value={choice.id}
-                                    id={choice.id}
-                                  />
-                                  <Label
-                                    htmlFor={choice.id}
-                                    className={cn(
-                                      "flex-grow",
-                                      showResult && isCorrect
-                                        ? "text-green-700 font-medium"
-                                        : "",
-                                      showResult && isSelected && !isCorrect
-                                        ? "text-red-700"
-                                        : ""
-                                    )}
-                                  >
-                                    {choice.definition}
-                                    {showResult && isCorrect && (
-                                      <span className="ml-2 text-green-600">
-                                        ✓
-                                      </span>
-                                    )}
-                                    {showResult && isSelected && !isCorrect && (
-                                      <span className="ml-2 text-red-600">
-                                        ✗
-                                      </span>
-                                    )}
-                                  </Label>
-                                </div>
-                              );
-                            })}
-                          </RadioGroup>
-                        )}
-
-                        <div className="mt-6 flex gap-4 justify-end">
-                          {!answerSubmitted ? (
-                            <Button
-                              disabled={
-                                !selectedAnswer ||
-                                isLoadingChoices ||
-                                isLoadingAnswerChoices
-                              }
-                              onClick={handleMultipleChoiceSubmit}
-                            >
-                              Submit Answer
-                            </Button>
-                          ) : (
-                            <Button onClick={handleNextQuestion}>
-                              {currentCardIndex < cards.length - 1
-                                ? "Next Question"
-                                : "See Results"}
-                            </Button>
-                          )}
-                        </div>
-                      </Card>
-                    )}
-                  </div>
-                )}
-
-                {learnMode === "flashcard" && (
-                  <div className="flex flex-col items-center">
-                    <Card className="w-full max-w-2xl p-6">
-                      <h3 className="text-lg font-semibold mb-4">
-                        Term:{" "}
-                        {cards[currentCardIndex]?.term || "No term available"}
-                      </h3>
-                      <div className="mt-6 flex gap-4 justify-center">
-                        <Button
-                          variant="outline"
-                          onClick={() => handleLearnResponse("skipped")}
-                        >
-                          Skip
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          onClick={() => handleLearnResponse("incorrect")}
-                        >
-                          Don't Know
-                        </Button>
-                        <Button
-                          variant="default"
-                          onClick={() => handleLearnResponse("correct")}
-                        >
-                          Know It
-                        </Button>
-                      </div>
-                    </Card>
-                    <div className="mt-4 text-sm text-gray-500">
-                      Progress: {Object.keys(learningProgress).length} of{" "}
-                      {cards.length} cards
-                    </div>
-                  </div>
-                )}
-
-                {learnMode === "write" && (
-                  <div className="flex flex-col items-center">
-                    <Card className="w-full max-w-2xl p-6">
-                      <h3 className="text-lg font-semibold mb-4">
-                        Write the definition for:{" "}
-                        {cards[currentCardIndex]?.term || "No term available"}
-                      </h3>
-                      {/* Implement write mode interface here */}
-                      <p className="text-gray-500 italic py-6 text-center">
-                        Write mode under development
-                      </p>
-                    </Card>
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="test" className="mt-6">
-                <div className="space-y-6">
-                  {!showTestResults ? (
-                    <>
-                      {cards.map((card, index) => (
-                        <Card key={card.id || index} className="p-6">
-                          <h3 className="text-lg font-semibold mb-4">
-                            {index + 1}. {card.term || "No term available"}
-                          </h3>
-                          <textarea
-                            className="w-full p-2 border rounded"
-                            rows={3}
-                            value={testAnswers[index] || ""}
-                            onChange={(e) =>
-                              setTestAnswers((prev) => ({
-                                ...prev,
-                                [index]: e.target.value,
-                              }))
-                            }
-                            placeholder="Enter your answer..."
-                          />
-                        </Card>
-                      ))}
-                      <Button className="w-full" onClick={handleTestSubmit}>
-                        Submit Test
-                      </Button>
-                    </>
-                  ) : (
-                    <div className="space-y-6">
-                      <h2 className="text-xl font-bold">Test Results</h2>
-                      {cards.map((card, index) => (
-                        <Card key={card.id || index} className="p-6">
-                          <div className="space-y-2">
-                            <p className="font-semibold">
-                              Term: {card.term || "No term available"}
-                            </p>
-                            <p className="text-gray-600">
-                              Your answer:{" "}
-                              {testAnswers[index] || "No answer provided"}
-                            </p>
-                            <p className="text-gray-600">
-                              Correct answer:{" "}
-                              {card.definition || "No definition available"}
-                            </p>
-                          </div>
-                        </Card>
-                      ))}
-                      <Button
-                        onClick={() => {
-                          setShowTestResults(false);
-                          setTestAnswers({});
-                        }}
-                      >
-                        Retake Test
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
             </Tabs>
 
             {/* Modal for selecting Learn mode */}

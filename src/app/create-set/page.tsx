@@ -89,7 +89,7 @@ export default function CreateSetPage() {
   };
   const handleSubmit = async () => {
     // Here you would typically save the set to your backend
-    console.log({ title, description, terms });
+    // console.log({ title, description, terms });
     await updateSet({id:setId,isDraft: false});
 
     router.push("/folder ");
@@ -104,10 +104,10 @@ export default function CreateSetPage() {
 
 
 
-  console.log('title', title);
-  console.log('description', description);
-  console.log('terms', terms);
-  console.log('folder', folderId)
+  // console.log('title', title);
+  // console.log('description', description);
+  // console.log('terms', terms);
+  // console.log('folder', folderId)
 
   useEffect(() => {
     if (!lastSaveTime) return;
