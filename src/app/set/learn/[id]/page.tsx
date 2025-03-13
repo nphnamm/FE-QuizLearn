@@ -39,6 +39,7 @@ const page = (props: Props) => {
   const { user } = useSelector((state: any) => state.auth);
   const [remainingCards, setRemainingCards] = useState<any[]>([]);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isSessionCompleted, setIsSessionCompleted] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isLearning, setIsLearning] = useState(false);
   const [restart, { isLoading: isRestarting }] = useRestartSessionMutation();
@@ -59,6 +60,15 @@ const page = (props: Props) => {
       { setId: id, cardId: remainingCards[currentCardIndex]?.id },
       { skip: !remainingCards[currentCardIndex]?.id }
     );
+  const [totalRounds, setTotalRounds] = useState(0);
+  const [cardResult, setCardResult] = useState<{
+    cardId: string;
+    isCorrect: boolean;
+    term: string;
+    definition: string;
+    round: number;
+  }[]>([]);
+  const [cardResultsByRound, setCardResultsByRound] = useState({});
   const [updateProgress, { isLoading: isUpdatingProgress }] =
     useUpdateProgressMutation();
   const handleStartOver = async () => {
@@ -76,31 +86,18 @@ const page = (props: Props) => {
       setId: id as string,
       userId: user?.id,
     });
+    setAnsweredCards([]);
     setCurrentCardIndex(0);
     setShowTestResults(false);
     setTotalCorrect(0);
     setSelectedAnswer(null);
     setRemainingCards(res?.data?.remainingCards);
+    setTotalCardsInSession(res?.data?.remainingCards?.length);
     setAnswerSubmitted(false);
     setIsCompleted(false);
+    setTotalRounds(1);
   };
-  const updateUserProgress = async (isCorrect: boolean) => {
-    try {
-      await updateProgress({
-        sessionId: id,
-        cardId: remainingCards[currentCardIndex].id,
-        isCorrect,
-      });
-      const res = await createOrUpdateUserSession({
-        setId: id as string,
-        userId: user?.id,
-      });
 
-      console.log("res", res);
-    } catch (error) {
-      console.error("Failed to update user progress:", error);
-    }
-  };
   const handleMultipleChoiceSubmit = async () => {
     if (!selectedAnswer) return;
 
@@ -117,20 +114,52 @@ const page = (props: Props) => {
 
     console.log("isCorrect", isCorrect);
     if (isCorrect) {
+      setAnsweredCards((prev) => [...prev, remainingCards[currentCardIndex]]);
       setTotalCorrect(totalCorrect + 1);
+      setCardResult((prev) => [
+        ...prev,
+        {
+          cardId: remainingCards[currentCardIndex]?.id,
+          isCorrect: true,
+          term: remainingCards[currentCardIndex]?.term,
+          definition: remainingCards[currentCardIndex]?.definition,
+          round: remainingCards[currentCardIndex]?.timesAnswered + 1,
+        },
+      ]);
+
+      try {
+        await updateProgress({
+          sessionId: sessionId,
+          cardId: remainingCards[currentCardIndex].id,
+          isCorrect,
+          timesAnswered: remainingCards[currentCardIndex].timesAnswered == 1 ? 1 : remainingCards[currentCardIndex].timesAnswered + 1,
+        });
+      } catch (error) {
+        toast.error("Failed to update user progress!");
+      }
     } else {
-
+      setCardResult((prev) => [
+        ...prev,
+        {
+          cardId: remainingCards[currentCardIndex]?.id,
+          isCorrect: false,
+          term: remainingCards[currentCardIndex]?.term,
+          definition: remainingCards[currentCardIndex]?.definition,
+          round: remainingCards[currentCardIndex]?.timesAnswered + 1,
+        },
+      ]);
+      try {
+        await updateProgress({
+          sessionId: sessionId,
+          cardId: remainingCards[currentCardIndex].id,
+          isCorrect,
+          timesAnswered: remainingCards[currentCardIndex].timesAnswered + 1,
+        });
+      } catch (error) {
+        toast.error("Failed to update user progress!");
+      }
     }
 
-    try {
-      await updateProgress({
-        sessionId: sessionId,
-        cardId: remainingCards[currentCardIndex].id,
-        isCorrect,
-      });
-    } catch (error) {
-      toast.error("Failed to update user progress!");
-    }
     // Update the learning progress
     // setLearningProgress((prev) => ({
     //   ...prev,
@@ -138,22 +167,19 @@ const page = (props: Props) => {
     // }));
 
     // Update user progress via API
-    await updateUserProgress(isCorrect);
   };
-  console.log("selectedAnswer", selectedAnswer);
+  // console.log("selectedAnswer", selectedAnswer);
 
   const handleStartLearning = async () => {
     const response = await createOrUpdateUserSession({
       setId: id as string,
       userId: user?.id,
     });
-    console.log("response", response);
+    // console.log("response", response);
     setSessionId(response?.data?.sessionId);
     setRemainingCards(response?.data?.remainingCards);
     setIsLearning(true);
     setIsCompleted(response?.data?.isCompleted);
-    console.log("response?.data?.remainingCards", response?.data?.remainingCards);
-    console.log("allCardsOfSet?.data?.length", allCardsOfSet.set);
     setTotalCorrect(
       allCardsOfSet?.sets?.length - response?.data?.remainingCards?.length
     );
@@ -161,13 +187,11 @@ const page = (props: Props) => {
     const remainingCardIds = new Set(
       response?.data?.remainingCards.map((card: any) => card.id)
     );
-    console.log("remainingCardIds", remainingCardIds);
     const allCards = allCardsOfSet?.sets;
     setCards(allCards);
     const answeredCards = allCards.filter(
       (card: any) => !remainingCardIds.has(card.id)
     );
-    console.log("answeredCards", answeredCards);
     setAnsweredCards(answeredCards);
     setTotalCardsInSession(response?.data?.remainingCards?.length);
   };
@@ -176,11 +200,13 @@ const page = (props: Props) => {
       setId: id as string,
       userId: user?.id,
     });
+    setShowTestResults(false);
     setTotalCorrect(0);
     setCurrentCardIndex(0);
     setRemainingCards(res?.data?.remainingCards);
     setSelectedAnswer(null);
     setAnswerSubmitted(false);
+    setCardResult([]);
     setTotalCardsInSession(res?.data?.remainingCards?.length);
   };
   const handleNextQuestion = async () => {
@@ -189,6 +215,12 @@ const page = (props: Props) => {
       setSelectedAnswer(null);
       setAnswerSubmitted(false);
     } else {
+      setTotalRounds(totalRounds + 1);
+      setCardResultsByRound((prev) => ({
+        ...prev,
+        [totalRounds]: cardResult,
+      }));
+
       // End of the set, show results and mark session as completed
       // setShowTestResults(true);
       const res = await createOrUpdateUserSession({
@@ -197,7 +229,7 @@ const page = (props: Props) => {
       });
       console.log("res", res);
       if (res?.data?.isCompleted) {
-        setIsCompleted(true);
+        setIsSessionCompleted(true);
         setShowTestResults(true);
       } else {
         setShowTestResults(true);
@@ -206,7 +238,8 @@ const page = (props: Props) => {
     }
   };
 
-  console.log("totalCorrect", totalCorrect);
+  console.log("cardResult", cardResult);
+  console.log("totalRounds", totalRounds);
   return (
     <Protected>
       <div className="min-h-screen bg-gray-50">
@@ -261,58 +294,96 @@ const page = (props: Props) => {
                     <h2 className="text-xl font-bold mb-4">Your Results</h2>
                     <div className="text-center mb-6">
                       <p className="text-3xl font-bold">
-                        {totalCorrect} / {cards.length}
+                        {totalCorrect} / {isSessionCompleted ? cards.length : totalCardsInSession}
                       </p>
                       <p className="text-gray-500">correct answers</p>
                     </div>
                     {/* Display answered cards */}
-                    {answeredCards.length > 0 && (
+                    {cardResult.length > 0 && (
                       <div className="mb-6">
                         <h3 className="text-lg font-semibold mb-3">
                           Completed Questions
                         </h3>
                         <div className="space-y-3">
-                          {answeredCards.map((card) => {
+                          {cardResultsByRound && Object.keys(cardResultsByRound).length > 0 ? (
+                            Object.entries(cardResultsByRound).map(
+                              ([round, results], index) => (
+                                <div key={round}>
+                                  <h3>Round {round + 1} Results:</h3>
+                                  <ul>
+                                    {(results as any[]).map((result, i) => (
+
+                                      <div
+                                        key={result.id}
+                                        className={cn(
+                                          "p-4 rounded-lg",
+                                          result.isCorrect
+                                            ? "bg-green-50 border border-green-200"
+                                            : "bg-red-50 border border-red-200"
+                                        )}
+                                      >
+                                        <p className="font-medium">{result.term}</p>
+                                        <p className="text-gray-600">
+                                          {result.definition}
+                                        </p>
+                                        <p
+                                          className={cn(
+                                            "mt-2 text-sm",
+                                            result.isCorrect
+                                              ? "text-green-600"
+                                              : "text-red-600"
+                                          )}
+                                        >
+                                          {result.isCorrect
+                                            ? "Correct"
+                                            : "Incorrect"}
+                                        </p>
+                                      </div>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )
+                            )
+                          ) : (
+                            <div>No results yet.</div>
+                          )}
+                          {/* {cardResult.map((card: any) => {
                             // const result = learningProgress[cards.findIndex(c => c.id === card.id)];
                             return (
+
                               <div
                                 key={card.id}
-                              // className={cn(
-                              //     "p-4 rounded-lg",
-                              //     result === "correct"
-                              //         ? "bg-green-50 border border-green-200"
-                              //         : result === "incorrect"
-                              //             ? "bg-red-50 border border-red-200"
-                              //             : "bg-gray-50 border border-gray-200"
-                              // )}
+                                className={cn(
+                                  "p-4 rounded-lg",
+                                  card.isCorrect
+                                    ? "bg-green-50 border border-green-200"
+                                    : "bg-red-50 border border-red-200"
+                                )}
                               >
                                 <p className="font-medium">{card.term}</p>
                                 <p className="text-gray-600">
                                   {card.definition}
                                 </p>
                                 <p
-                                // className={cn(
-                                //     "mt-2 text-sm",
-                                //     result === "correct"
-                                //         ? "text-green-600"
-                                //         : result === "incorrect"
-                                //             ? "text-red-600"
-                                //             : "text-gray-600"
-                                // )}
+                                  className={cn(
+                                    "mt-2 text-sm",
+                                    card.isCorrect
+                                      ? "text-green-600"
+                                      : "text-red-600"
+                                  )}
                                 >
-                                  {/* {result === "correct"
-                                                                            ? "Correct"
-                                                                            : result === "incorrect"
-                                                                                ? "Incorrect"
-                                                                                : "Skipped"} */}
+                                  {card.isCorrect
+                                    ? "Correct"
+                                    : "Incorrect"}
                                 </p>
                               </div>
                             );
-                          })}
+                          })} */}
                         </div>
                       </div>
                     )}
-                    {isCompleted ? (
+
+                    {isSessionCompleted ? (
                       <Button className="w-full mt-6" onClick={handleStartOver}>
                         Start Over
                       </Button>
