@@ -87,6 +87,8 @@ const page = (props: Props) => {
       userId: user?.id,
     });
     setAnsweredCards([]);
+    setCardResultsByRound({});
+    setIsSessionCompleted(false);
     setCurrentCardIndex(0);
     setShowTestResults(false);
     setTotalCorrect(0);
@@ -169,7 +171,7 @@ const page = (props: Props) => {
     // Update user progress via API
   };
   // console.log("selectedAnswer", selectedAnswer);
-
+  console.log("cardResultsByRound", cardResultsByRound);
   const handleStartLearning = async () => {
     const response = await createOrUpdateUserSession({
       setId: id as string,
@@ -309,8 +311,8 @@ const page = (props: Props) => {
                             Object.entries(cardResultsByRound).map(
                               ([round, results], index) => (
                                 <div key={round}>
-                                  <h3>Round {round + 1} Results:</h3>
-                                  <ul>
+                                  <h3>Round {parseInt(round) + 1} Results:</h3>
+                                  <ul className="flex flex-col gap-2">
                                     {(results as any[]).map((result, i) => (
 
                                       <div
@@ -322,7 +324,7 @@ const page = (props: Props) => {
                                             : "bg-red-50 border border-red-200"
                                         )}
                                       >
-                                        <p className="font-medium">{result.term}</p>
+                                        <p className="font-medium text-lg text-black">{result.term}</p>
                                         <p className="text-gray-600">
                                           {result.definition}
                                         </p>
@@ -454,7 +456,7 @@ const page = (props: Props) => {
                             <Label
                               htmlFor={choice.id}
                               className={cn(
-                                "flex-grow",
+                                "flex-grow  ",
                                 showResult && isCorrect
                                   ? "text-green-700 font-medium"
                                   : "",
