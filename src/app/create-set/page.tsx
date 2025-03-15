@@ -11,15 +11,63 @@ import { useCreateSetMutation, useUpdateSetMutation } from "../../../redux/featu
 import { useSelector } from "react-redux";
 import { RootState } from "@reduxjs/toolkit/query";
 import { isDraft } from "@reduxjs/toolkit";
-import { useCreateCardMutation, useGetCardBySetIdQuery } from "../../../redux/features/cards/cardsApi";
+import { useCreateCardMutation, useGetCardBySetIdQuery, useUpdateCardMutation } from "../../../redux/features/cards/cardsApi";
+import Image from "next/image";
+
+// Type for image search results
+interface ImageResult {
+  id: string;
+  url: string;
+  alt: string;
+  thumbnail: string;
+}
+
+// Simple Carousel component
+const ImageCarousel = ({
+  images,
+  onSelect
+}: {
+  images: ImageResult[],
+  onSelect: (url: string) => void
+}) => {
+  return (
+    <div className="w-full mt-4">
+      {/* Multi-image horizontal carousel */}
+      <div className="relative">
+        <div className="flex overflow-x-auto pb-4 gap-3 snap-x scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+          {images.map((image) => (
+            <div
+              key={image.id}
+              className="relative flex-none w-1/4 min-w-[200px] h-48 border rounded-md overflow-hidden snap-start"
+            >
+              <img
+                src={image.url}
+                alt={image.alt}
+                className="w-full h-full object-cover"
+              />
+              <div
+                className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer bg-black bg-opacity-20"
+                onClick={() => onSelect(image.url)}
+              >
+                <span className="bg-white px-3 py-1 rounded-full font-medium text-sm shadow-md">
+                  Select
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function CreateSetPage() {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  // const [cards, setCards] = useState([{ term: "", definition: "", id: null }]);
-  const [terms, setTerms] = useState([{ term: "", definition: "", id: "" }]);
+  // Updated to include imageUrl field
+  const [terms, setTerms] = useState([{ term: "", definition: "", id: "", imageUrl: "" }]);
   const { user } = useSelector((state: any) => state.auth);
   const params = useSearchParams();
   const folderId = params.get('folderId');
@@ -29,9 +77,15 @@ export default function CreateSetPage() {
   const [createSet, { isLoading: isCreating }] = useCreateSetMutation();
   const [updateSet, { isLoading: isUpdating }] = useUpdateSetMutation();
   const [createCard, { isLoading: isCreatingCards }] = useCreateCardMutation();
+  const [updateCard, { isLoading: isUpdatingCard }] = useUpdateCardMutation();
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const [timeSinceLastSave, setTimeSinceLastSave] = useState<string>("0s");
-  console.log(user);
+
+  // States for image search functionality
+  const [activeImageSearchIndex, setActiveImageSearchIndex] = useState<number | null>(null);
+  const [imageSearchResults, setImageSearchResults] = useState<ImageResult[]>([]);
+  const [isSearchingImages, setIsSearchingImages] = useState(false);
+
   const autosave = async () => {
     try {
       let currentSetId = setId;
@@ -54,6 +108,7 @@ export default function CreateSetPage() {
             setId: currentSetId,
             term: terms[i].term,
             definition: terms[i].definition,
+            imageUrl: terms[i].imageUrl, // Include the image URL
           });
           const newCardId = res?.data?.card.id;
           if (newCardId) {
@@ -74,26 +129,73 @@ export default function CreateSetPage() {
       setAutosaveStatus("Error saving data");
     }
   };
+
   const handleTermChange = (index: number, field: "term" | "definition", value: string) => {
     const newTerms = [...terms];
     newTerms[index][field] = value;
     setTerms(newTerms);
   };
 
-
-  // Update card fields as the user types
-
-
   const handleAddTerm = () => {
-    setTerms([...terms, { term: "", definition: "", id: "" }]);
+    setTerms([...terms, { term: "", definition: "", id: "", imageUrl: "" }]);
   };
-  const handleSubmit = async () => {
-    // Here you would typically save the set to your backend
-    // console.log({ title, description, terms });
-    await updateSet({id:setId,isDraft: false});
 
+  // Function to search for images using the term as a query
+  const handleSearchImages = async (index: number) => {
+    const term = terms[index].term.trim();
+    if (!term) {
+      alert("Please enter a term before searching for images.");
+      return;
+    }
+
+    setIsSearchingImages(true);
+    setActiveImageSearchIndex(index);
+
+    try {
+      // Mock image search results for now
+      // In a real implementation, you would call an API like Unsplash, Pexels, or Pixabay
+      // Example: const response = await fetch(`https://api.unsplash.com/search/photos?query=${term}&client_id=YOUR_API_KEY`);
+
+      // Simulating API response with dummy data
+      const mockResults: ImageResult[] = [
+        { id: '1', url: 'https://images.unsplash.com/photo-1568144628871-ccbb00fc297c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MjMwMTB8MHwxfHNlYXJjaHw0fHxIZWxsb3xlbnwwfHx8fDE3NDIwMTE1NDF8MA&ixlib=rb-4.0.3&q=80&w=400', thumbnail: 'https://source.unsplash.com/random/100x100?sig=1&' + term, alt: `${term} image 1` },
+        { id: '2', url: 'https://source.unsplash.com/random/800x600?sig=2&' + term, thumbnail: 'https://source.unsplash.com/random/100x100?sig=2&' + term, alt: `${term} image 2` },
+        { id: '3', url: 'https://source.unsplash.com/random/800x600?sig=3&' + term, thumbnail: 'https://source.unsplash.com/random/100x100?sig=3&' + term, alt: `${term} image 3` },
+        { id: '4', url: 'https://source.unsplash.com/random/800x600?sig=4&' + term, thumbnail: 'https://source.unsplash.com/random/100x100?sig=4&' + term, alt: `${term} image 4` },
+        { id: '5', url: 'https://source.unsplash.com/random/800x600?sig=5&' + term, thumbnail: 'https://source.unsplash.com/random/100x100?sig=5&' + term, alt: `${term} image 5` },
+      ];
+
+      setImageSearchResults(mockResults);
+    } catch (error) {
+      console.error("Error searching for images:", error);
+      alert("Failed to search for images. Please try again.");
+    } finally {
+      setIsSearchingImages(false);
+    }
+  };
+
+  // Function to select an image
+  const handleSelectImage = async (imageUrl: string) => {
+    if (activeImageSearchIndex !== null) {
+      console.log("imageUrl", imageUrl);
+      await updateCard({ id: terms[activeImageSearchIndex].id, imageUrl: imageUrl });
+      setActiveImageSearchIndex(null);
+      setImageSearchResults([]);
+    }
+  };
+
+  // Function to clear the selected image
+  const handleClearImage = (index: number) => {
+    const newTerms = [...terms];
+    newTerms[index].imageUrl = "";
+    setTerms(newTerms);
+  };
+
+  const handleSubmit = async () => {
+    await updateSet({ id: setId, isDraft: false });
     router.push("/folder ");
   };
+
   useEffect(() => {
     setAutosaveStatus("Saving...");
     const timer = setTimeout(() => {
@@ -102,19 +204,12 @@ export default function CreateSetPage() {
     return () => clearTimeout(timer);
   }, [setId, terms, title, description]);
 
-
-
-  // console.log('title', title);
-  // console.log('description', description);
-  // console.log('terms', terms);
-  // console.log('folder', folderId)
-
   useEffect(() => {
     if (!lastSaveTime) return;
-    
+
     const interval = setInterval(() => {
       const seconds = Math.floor((new Date().getTime() - lastSaveTime.getTime()) / 1000);
-      
+
       if (seconds < 60) {
         setTimeSinceLastSave(`${seconds}s`);
       } else if (seconds < 3600) {
@@ -125,9 +220,10 @@ export default function CreateSetPage() {
         setTimeSinceLastSave(`${hours}h`);
       }
     }, 1000);
-    
+
     return () => clearInterval(interval);
   }, [lastSaveTime]);
+
   return (
     <Protected>
       <div className="min-h-screen bg-gray-50">
@@ -214,36 +310,90 @@ export default function CreateSetPage() {
                   {terms.map((term, index) => (
                     <div
                       key={index}
-                      className="grid grid-cols-2 gap-4 p-4 border rounded-lg"
+                      className="p-4 border rounded-lg space-y-4"
                     >
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Term {index + 1}
-                        </label>
-                        <Input
-                          placeholder="Enter term"
-                          value={term.term}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                            handleTermChange(index, "term", e.target.value)
-                          }
-                        />
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Term {index + 1}
+                          </label>
+                          <Input
+                            placeholder="Enter term"
+                            value={term.term}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                              handleTermChange(index, "term", e.target.value)
+                            }
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Definition
+                          </label>
+                          <Input
+                            placeholder="Enter definition"
+                            value={term.definition}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                              handleTermChange(
+                                index,
+                                "definition",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Definition
-                        </label>
-                        <Input
-                          placeholder="Enter definition"
-                          value={term.definition}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                            handleTermChange(
-                              index,
-                              "definition",
-                              e.target.value
-                            )
-                          }
-                        />
+
+                      {/* Image section */}
+                      <div className="mt-2">
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleSearchImages(index)}
+                            disabled={isSearchingImages}
+                          >
+                            {isSearchingImages && activeImageSearchIndex === index
+                              ? "Searching..."
+                              : term.imageUrl
+                                ? "Change Image"
+                                : "Add Image"
+                            }
+                          </Button>
+
+                          {term.imageUrl && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleClearImage(index)}
+                            >
+                              Remove Image
+                            </Button>
+                          )}
+                        </div>
+
+                        {term.imageUrl && (
+                          <div className="mt-2">
+                            <div className="relative h-40 w-full max-w-xs overflow-hidden rounded-md">
+                              <img
+                                src={term.imageUrl}
+                                alt={`Image for ${term.term}`}
+                                className="object-cover h-full w-full"
+                              />
+                            </div>
+                          </div>
+                        )}
                       </div>
+
+                      {/* Image search results carousel */}
+                      {activeImageSearchIndex === index && imageSearchResults.length > 0 && (
+                        <div className="mt-2 p-3 bg-gray-50 rounded-md">
+                          <div className="text-sm font-medium mb-2">Select an image for "{term.term}":</div>
+                          <ImageCarousel
+                            images={imageSearchResults}
+                            onSelect={handleSelectImage}
+                          />
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

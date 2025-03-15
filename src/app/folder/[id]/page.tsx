@@ -55,10 +55,10 @@ export default function DashboardPage() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const params = useParams();
   const id = params.id;
-  console.log(id, "id");
+  // console.log(id, "id");
   const [sets, setSets] = useState<any>([]);
   const {data,isLoading, isError } = useGetSetByFolderIdQuery(id, {});
-  console.log(data, "data");
+  // console.log(data, "data");
   
   useEffect(() => {
     const foundItem = mockData.find((item: any) => item.id == id);
@@ -70,6 +70,7 @@ export default function DashboardPage() {
   }, [id]);
   useEffect(() => {
     if (data?.sets) {
+      
       setSets(data.sets);
     }
   }, [data]);

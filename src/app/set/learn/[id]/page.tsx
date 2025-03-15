@@ -60,7 +60,7 @@ const page = (props: Props) => {
       { setId: id, cardId: remainingCards[currentCardIndex]?.id },
       { skip: !remainingCards[currentCardIndex]?.id }
     );
-  const [totalRounds, setTotalRounds] = useState(0);
+  const [totalRounds, setTotalRounds] = useState(1);
   const [cardResult, setCardResult] = useState<{
     cardId: string;
     isCorrect: boolean;
@@ -87,6 +87,7 @@ const page = (props: Props) => {
       userId: user?.id,
     });
     setAnsweredCards([]);
+    setCardResult([]);
     setCardResultsByRound({});
     setIsSessionCompleted(false);
     setCurrentCardIndex(0);
@@ -107,14 +108,14 @@ const page = (props: Props) => {
     const selectedChoice = answerChoicesData?.choices.find(
       (choice: any) => choice.id === selectedAnswer
     );
-    console.log("selectedAnswer", selectedAnswer);
+    // console.log("selectedAnswer", selectedAnswer);
 
-    console.log("answerChoicesData", answerChoicesData);
+    // console.log("answerChoicesData", answerChoicesData);
 
     const isCorrect =
       answerChoicesData?.correctAnswerId == selectedAnswer || false;
 
-    console.log("isCorrect", isCorrect);
+    // console.log("isCorrect", isCorrect);
     if (isCorrect) {
       setAnsweredCards((prev) => [...prev, remainingCards[currentCardIndex]]);
       setTotalCorrect(totalCorrect + 1);
@@ -171,7 +172,7 @@ const page = (props: Props) => {
     // Update user progress via API
   };
   // console.log("selectedAnswer", selectedAnswer);
-  console.log("cardResultsByRound", cardResultsByRound);
+    // console.log("cardResultsByRound", cardResultsByRound);
   const handleStartLearning = async () => {
     const response = await createOrUpdateUserSession({
       setId: id as string,
@@ -229,7 +230,7 @@ const page = (props: Props) => {
         setId: id as string,
         userId: user?.id,
       });
-      console.log("res", res);
+      // console.log("res", res);
       if (res?.data?.isCompleted) {
         setIsSessionCompleted(true);
         setShowTestResults(true);
@@ -239,9 +240,10 @@ const page = (props: Props) => {
       // setShowTestResults(true);
     }
   };
+  console.log("cardResultsByRound", cardResultsByRound);
 
-  console.log("cardResult", cardResult);
-  console.log("totalRounds", totalRounds);
+  // console.log("cardResult", cardResult);
+   console.log("totalRounds", totalRounds);
   return (
     <Protected>
       <div className="min-h-screen bg-gray-50">
@@ -311,7 +313,7 @@ const page = (props: Props) => {
                             Object.entries(cardResultsByRound).map(
                               ([round, results], index) => (
                                 <div key={round}>
-                                  <h3>Round {parseInt(round) + 1} Results:</h3>
+                                  <h3>Round {parseInt(round)} Results:</h3>
                                   <ul className="flex flex-col gap-2">
                                     {(results as any[]).map((result, i) => (
 

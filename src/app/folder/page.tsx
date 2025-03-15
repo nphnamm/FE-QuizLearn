@@ -77,9 +77,9 @@ export default function FolderPage() {
     if (data) {
       setFolders(data.folders);
     }
-    console.log('folders',data);
+    // console.log('folders',data);
   }, [data]);
-  console.log(data);
+  // console.log(data);
 
   return (
     <Protected>
