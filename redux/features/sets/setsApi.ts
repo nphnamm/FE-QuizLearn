@@ -18,6 +18,13 @@ export const setsApi = apiSlice.injectEndpoints({
                 credentials: "include" as const,
             }),
         }),
+        deleteSet: builder.mutation({
+            query: (id) => ({
+                url: `set/delete-set/${id}`,
+                method: "DELETE",
+                credentials: "include" as const,
+            }),
+        }),
         getAllSets: builder.query({
             query: () => ({
                 url: "set/get-all-sets",
@@ -46,6 +53,7 @@ export const setsApi = apiSlice.injectEndpoints({
 export const {
     useCreateSetMutation,
     useUpdateSetMutation,
+    useDeleteSetMutation,
     useGetAllSetsQuery,
     useGetSetsByUserIdQuery,
     useGetSetByFolderIdQuery,

@@ -13,11 +13,12 @@ import { RootState } from "@reduxjs/toolkit/query";
 import { isDraft } from "@reduxjs/toolkit";
 import { useCreateCardMutation, useGetCardBySetIdQuery, useUpdateCardMutation } from "../../../redux/features/cards/cardsApi";
 import Image from "next/image";
+import { useSearchImageMutation } from "../../../redux/features/image/imageApi";
 
 // Type for image search results
 interface ImageResult {
   id: string;
-  url: string;
+  imageUrl: string;
   alt: string;
   thumbnail: string;
 }
@@ -41,13 +42,13 @@ const ImageCarousel = ({
               className="relative flex-none w-1/4 min-w-[200px] h-48 border rounded-md overflow-hidden snap-start"
             >
               <img
-                src={image.url}
+                src={image.imageUrl}
                 alt={image.alt}
                 className="w-full h-full object-cover"
               />
               <div
                 className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer bg-black bg-opacity-20"
-                onClick={() => onSelect(image.url)}
+                onClick={() => onSelect(image.imageUrl)}
               >
                 <span className="bg-white px-3 py-1 rounded-full font-medium text-sm shadow-md">
                   Select
@@ -78,6 +79,7 @@ export default function CreateSetPage() {
   const [updateSet, { isLoading: isUpdating }] = useUpdateSetMutation();
   const [createCard, { isLoading: isCreatingCards }] = useCreateCardMutation();
   const [updateCard, { isLoading: isUpdatingCard }] = useUpdateCardMutation();
+  const [searchImage, { isLoading: isSearching }] = useSearchImageMutation();
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const [timeSinceLastSave, setTimeSinceLastSave] = useState<string>("0s");
 
@@ -85,6 +87,7 @@ export default function CreateSetPage() {
   const [activeImageSearchIndex, setActiveImageSearchIndex] = useState<number | null>(null);
   const [imageSearchResults, setImageSearchResults] = useState<ImageResult[]>([]);
   const [isSearchingImages, setIsSearchingImages] = useState(false);
+  const [imageSearchQuery, setImageSearchQuery] = useState("");
 
   const autosave = async () => {
     try {
@@ -140,32 +143,37 @@ export default function CreateSetPage() {
     setTerms([...terms, { term: "", definition: "", id: "", imageUrl: "" }]);
   };
 
-  // Function to search for images using the term as a query
+  // Function to initialize image search
   const handleSearchImages = async (index: number) => {
+    setActiveImageSearchIndex(index);
+    // Initialize search query with the term's value
     const term = terms[index].term.trim();
-    if (!term) {
-      alert("Please enter a term before searching for images.");
+    setImageSearchQuery(term);
+    
+    // If term exists, immediately search
+    if (term) {
+      performImageSearch(term);
+    }
+  };
+
+  // Function to perform the image search with any query
+  const performImageSearch = async (query: string) => {
+    if (!query.trim()) {
+      alert("Please enter a search term.");
       return;
     }
 
     setIsSearchingImages(true);
-    setActiveImageSearchIndex(index);
 
     try {
       // Mock image search results for now
       // In a real implementation, you would call an API like Unsplash, Pexels, or Pixabay
-      // Example: const response = await fetch(`https://api.unsplash.com/search/photos?query=${term}&client_id=YOUR_API_KEY`);
+      // Example: const response = await fetch(`https://api.unsplash.com/search/photos?query=${query}&client_id=YOUR_API_KEY`);
 
       // Simulating API response with dummy data
-      const mockResults: ImageResult[] = [
-        { id: '1', url: 'https://images.unsplash.com/photo-1568144628871-ccbb00fc297c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MjMwMTB8MHwxfHNlYXJjaHw0fHxIZWxsb3xlbnwwfHx8fDE3NDIwMTE1NDF8MA&ixlib=rb-4.0.3&q=80&w=400', thumbnail: 'https://source.unsplash.com/random/100x100?sig=1&' + term, alt: `${term} image 1` },
-        { id: '2', url: 'https://source.unsplash.com/random/800x600?sig=2&' + term, thumbnail: 'https://source.unsplash.com/random/100x100?sig=2&' + term, alt: `${term} image 2` },
-        { id: '3', url: 'https://source.unsplash.com/random/800x600?sig=3&' + term, thumbnail: 'https://source.unsplash.com/random/100x100?sig=3&' + term, alt: `${term} image 3` },
-        { id: '4', url: 'https://source.unsplash.com/random/800x600?sig=4&' + term, thumbnail: 'https://source.unsplash.com/random/100x100?sig=4&' + term, alt: `${term} image 4` },
-        { id: '5', url: 'https://source.unsplash.com/random/800x600?sig=5&' + term, thumbnail: 'https://source.unsplash.com/random/100x100?sig=5&' + term, alt: `${term} image 5` },
-      ];
-
-      setImageSearchResults(mockResults);
+      const result = await searchImage({ keyword: query });
+      console.log("result", result);
+      setImageSearchResults(result.data.images);
     } catch (error) {
       console.error("Error searching for images:", error);
       alert("Failed to search for images. Please try again.");
@@ -178,7 +186,13 @@ export default function CreateSetPage() {
   const handleSelectImage = async (imageUrl: string) => {
     if (activeImageSearchIndex !== null) {
       console.log("imageUrl", imageUrl);
+      const newTerms = [...terms];
+      newTerms[activeImageSearchIndex].imageUrl = imageUrl;
+      setTerms(newTerms);
       await updateCard({ id: terms[activeImageSearchIndex].id, imageUrl: imageUrl });
+      
+      // Update local state as well
+      
       setActiveImageSearchIndex(null);
       setImageSearchResults([]);
     }
@@ -223,7 +237,7 @@ export default function CreateSetPage() {
 
     return () => clearInterval(interval);
   }, [lastSaveTime]);
-
+  console.log("terms", terms);
   return (
     <Protected>
       <div className="min-h-screen bg-gray-50">
@@ -384,14 +398,49 @@ export default function CreateSetPage() {
                         )}
                       </div>
 
-                      {/* Image search results carousel */}
-                      {activeImageSearchIndex === index && imageSearchResults.length > 0 && (
+                      {/* Image search results carousel with search bar */}
+                      {activeImageSearchIndex === index && (
                         <div className="mt-2 p-3 bg-gray-50 rounded-md">
-                          <div className="text-sm font-medium mb-2">Select an image for "{term.term}":</div>
-                          <ImageCarousel
-                            images={imageSearchResults}
-                            onSelect={handleSelectImage}
-                          />
+                          <div className="text-sm font-medium mb-2">Find images for "{term.term}":</div>
+                          
+                          {/* Custom search bar */}
+                          <div className="mb-4 flex gap-2">
+                            <Input
+                              placeholder="Search for images..."
+                              value={imageSearchQuery}
+                              onChange={(e) => setImageSearchQuery(e.target.value)}
+                              className="flex-grow"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  performImageSearch(imageSearchQuery);
+                                }
+                              }}
+                            />
+                            <Button 
+                              onClick={() => performImageSearch(imageSearchQuery)}
+                              disabled={isSearchingImages}
+                            >
+                              {isSearchingImages ? "Searching..." : "Search"}
+                            </Button>
+                          </div>
+
+                          {/* Display search results if available */}
+                          {imageSearchResults.length > 0 && (
+                            <ImageCarousel
+                              images={imageSearchResults}
+                              onSelect={handleSelectImage}
+                            />
+                          )}
+
+                          {/* Message when no results are available */}
+                          {activeImageSearchIndex === index && 
+                           imageSearchResults.length === 0 && 
+                           !isSearchingImages && (
+                            <div className="text-center py-4 text-gray-500">
+                              Enter a search term and press Search to find images
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
