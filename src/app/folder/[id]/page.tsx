@@ -212,8 +212,9 @@ export default function DashboardPage() {
   //   setCurrentEditingSet(set);
   //   setIsCardsDialogOpen(true);
   // }
-  const handleEditCardsOfSet = () => {
-    router.push(`/`);
+  const handleEditCardsOfSet = (set: any, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent navigating to set page
+    router.push(`/set/update-set/${set.id}`);
   }
   
   // Track modified cards
@@ -446,7 +447,7 @@ export default function DashboardPage() {
             isSidebarOpen ? "pl-64" : "pl-20"
           )}
         >
-          <div className="dark:bg-[#1a1a1a] bg-[#f4f4f4] text-white min-h-screen">
+          <div className="dark:bg-[#1a1a1a] bg-background text-white min-h-screen">
             <div className="max-w-[1400px] mx-auto p-8 space-y-8">
               {/* Dashboard Header */}
               <div className="flex items-center justify-between">
@@ -516,7 +517,7 @@ export default function DashboardPage() {
                         <div
                           key={index}
                           className="flex justify-between items-center p-2 hover:bg-gray-100 rounded-md bg-teal-600 hover:bg-teal-500 transition-colors cursor-pointer"
-                          // onClick={() => router.push(`/set/${set.id}`)}
+                          onClick={() => router.push(`/set/${set.id}`)}
                         >
                           <div className="flex items-center gap-2">
                             <span className="text-white">{set.title}</span>
@@ -526,7 +527,7 @@ export default function DashboardPage() {
                             <Button 
                               variant="ghost" 
                               size="icon"
-                              onClick={() => router.push(`/set/update-set/${set.id}`)}
+                              onClick={(e) => handleEditCardsOfSet(set, e)}
                               title="Edit Cards"
                             >
                               <PencilLine className="h-4 w-4 text-white" />
@@ -563,7 +564,7 @@ export default function DashboardPage() {
                         <div
                           key={index}
                           className="flex justify-between items-center p-2 hover:bg-gray-100 rounded-md bg-amber-600 hover:bg-amber-500 transition-colors cursor-pointer"
-                          // onClick={() => router.push(`/set/${set.id}`)}
+                          onClick={() => router.push(`/set/${set.id}`)}
                         >
                           <div className="flex items-center gap-2">
                             <span className="text-white">{set.title}</span>
@@ -582,7 +583,7 @@ export default function DashboardPage() {
                             <Button 
                               variant="ghost" 
                               size="icon"
-                              onClick={() => router.push(`/set/update-set/${set.id}`)}
+                              onClick={(e) => handleEditCardsOfSet(set, e)}
                               title="Edit Cards"
                             >
                               <PencilLine className="h-4 w-4 text-white" />

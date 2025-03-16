@@ -1,9 +1,13 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { userLoggedIn } from "../auth/authSlice";
 
+// Define tag types for the entire API
+const tagTypes = ['Card', 'Set', 'FolderSets', 'AllSets', 'UserSets'] as const;
+
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:8000/api/v1" }),
+  tagTypes: tagTypes,
   endpoints: (builder) => ({
     refreshToken: builder.query({
       query: (data) => ({

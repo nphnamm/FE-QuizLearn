@@ -60,7 +60,10 @@ export default function StudySetPage() {
   const { user } = useSelector((state: any) => state.auth);
   const params = useParams();
   const id = params.id;
-  const { data, isLoading } = useGetCardBySetIdQuery(id, {});
+  const { data, isLoading, refetch } = useGetCardBySetIdQuery(id, {
+    refetchOnMountOrArgChange: true,
+    skip: false
+  });
 
   const [currentMode, setCurrentMode] = useState<StudyMode>("flashcards");
   const [learnMode, setLearnMode] = useState<LearnMode>("multiple-choice");
@@ -102,6 +105,11 @@ export default function StudySetPage() {
       setCards(data.sets);
     }
   }, [data]);
+
+  // Ensure data is refreshed when the component mounts
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   // Create user session when starting multiple-choice mode
   const createUserSession = async () => {
@@ -296,9 +304,17 @@ export default function StudySetPage() {
     setAnswerSubmitted(false);
     setTotalCorrect(0);
 
+    // Ensure we have the latest data
+    await refetch();
+
     if (mode === "multiple-choice") {
       // console.log("session", session);
       router.push(`/set/learn/${id}`);
+    } else if (mode === "write") {
+      router.push(`/set/write/${id}`);
+    } else if (mode === "flashcard") {
+      // Stay on current page but switch to flashcard mode
+      setCurrentMode("flashcards");
     }
   };
 
@@ -441,7 +457,7 @@ export default function StudySetPage() {
 
         <main
           className={cn(
-            "transition-all duration-300 pt-24 px-8",
+            "transition-all bg-background duration-300 pt-24 px-8",
             isSidebarOpen ? "ml-64" : "ml-20"
           )}
         >

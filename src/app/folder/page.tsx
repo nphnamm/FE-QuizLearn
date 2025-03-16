@@ -190,7 +190,6 @@ export default function FolderPage() {
               <div className="p-4 space-y-4">
                 <div className="flex justify-between items-center">
                   <CreateFolderDialog onCreateFolder={handleCreateFolder} />
-                  <Button onClick={handleCreateSet}>Create Set</Button>
 
                   <div className="flex items-center gap-2">
                     <Button variant="outline" size="icon">

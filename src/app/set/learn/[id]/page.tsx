@@ -286,7 +286,7 @@ const page = (props: Props) => {
 
         <main
           className={cn(
-            "transition-all duration-300 pt-24 px-8",
+            "transition-all duration-300 pt-24 px-8 bg-background min-h-screen",
             isSidebarOpen ? "ml-64" : "ml-20"
           )}
         >

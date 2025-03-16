@@ -126,7 +126,7 @@ export default function UpdateSetPage() {
   const [updateCard, { isLoading: isUpdatingCard }] = useUpdateCardMutation();
   const [createCard, { isLoading: isCreatingCard }] = useCreateCardMutation();
   const [searchImage] = useSearchImageMutation();
-  
+  console.log("setId", setId);
   // Load set data
   useEffect(() => {
     if (allSetsData?.sets) {
@@ -218,7 +218,7 @@ export default function UpdateSetPage() {
       
       if (promises.length > 0) {
         await Promise.all(promises);
-        setModifiedCards(new Set()); // Clear modified set
+        setModifiedCards(new Set());
       }
       
       setAutosaveStatus("Saved");
@@ -336,8 +336,9 @@ export default function UpdateSetPage() {
     setIsSearchingImages(true);
     
     try {
-      const response = await searchImage({ query: query }).unwrap();
-      setImageSearchResults(response.results || []);
+      const response = await searchImage({ keyword: query });
+      console.log("response", response);
+      setImageSearchResults(response.data.images);
     } catch (error) {
       console.error("Failed to search images:", error);
       toast.error("Failed to search images");
@@ -346,7 +347,7 @@ export default function UpdateSetPage() {
     }
   };
   
-  const handleSelectImage = (imageUrl: string) => {
+  const handleSelectImage = async (imageUrl: string) => {
     if (activeImageSearchIndex === null) return;
     
     const updatedTerms = [...terms];
@@ -356,21 +357,56 @@ export default function UpdateSetPage() {
     };
     setTerms(updatedTerms);
     
-    // Track as modified if it has an ID (existing card)
-    if (updatedTerms[activeImageSearchIndex].id) {
-      setModifiedCards(prev => {
-        const newSet = new Set(prev);
-        newSet.add(updatedTerms[activeImageSearchIndex].id);
-        return newSet;
-      });
+    try {
+      setAutosaveStatus("Saving...");
+      
+      const term = updatedTerms[activeImageSearchIndex];
+      
+      if (term.id) {
+        // If card exists, just update the image and track as modified
+        await updateCard({ 
+          id: term.id,
+          setId: setId,
+          imageUrl: imageUrl
+        });
+        
+        // Track as modified
+        setModifiedCards(prev => {
+          const newSet = new Set(prev);
+          newSet.add(term.id);
+          return newSet;
+        });
+      } else {
+        // If it's a new card, create it with the image
+        const res = await createCard({
+          setId: setId,
+          term: term.term,
+          definition: term.definition,
+          imageUrl: imageUrl
+        });
+        
+        // Update the card ID in local state
+        if (res?.data?.card?.id) {
+          updatedTerms[activeImageSearchIndex].id = res.data.card.id;
+          setTerms(updatedTerms);
+        }
+      }
+      
+      setAutosaveStatus("Saved");
+      setLastSaveTime(new Date());
+      setTimeSinceLastSave("0s");
+      
+      toast.success("Image added to card");
+    } catch (error) {
+      console.error("Error saving card with image:", error);
+      setAutosaveStatus("Error saving data");
+      toast.error("Failed to save card with image");
     }
     
     // Reset search
     setImageSearchResults([]);
     setImageSearchQuery("");
     setActiveImageSearchIndex(null);
-    
-    toast.success("Image added to card");
   };
   
   const handleClearImage = (index: number) => {
@@ -407,7 +443,9 @@ export default function UpdateSetPage() {
       </div>
     );
   }
-  
+
+  console.log("terms", terms);
+  console.log("modifiedCards", modifiedCards);
   return (
     <Protected>
       <div className="min-h-screen bg-gray-50">

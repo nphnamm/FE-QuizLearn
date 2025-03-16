@@ -14,6 +14,7 @@ import { isDraft } from "@reduxjs/toolkit";
 import { useCreateCardMutation, useGetCardBySetIdQuery, useUpdateCardMutation } from "../../../redux/features/cards/cardsApi";
 import Image from "next/image";
 import { useSearchImageMutation } from "../../../redux/features/image/imageApi";
+import { toast } from "sonner";
 
 // Type for image search results
 interface ImageResult {
@@ -159,7 +160,7 @@ export default function CreateSetPage() {
   // Function to perform the image search with any query
   const performImageSearch = async (query: string) => {
     if (!query.trim()) {
-      alert("Please enter a search term.");
+      toast.error("Please enter a search term");
       return;
     }
 
@@ -176,7 +177,7 @@ export default function CreateSetPage() {
       setImageSearchResults(result.data.images);
     } catch (error) {
       console.error("Error searching for images:", error);
-      alert("Failed to search for images. Please try again.");
+      toast.error("Failed to search for images. Please try again.");
     } finally {
       setIsSearchingImages(false);
     }
@@ -189,9 +190,63 @@ export default function CreateSetPage() {
       const newTerms = [...terms];
       newTerms[activeImageSearchIndex].imageUrl = imageUrl;
       setTerms(newTerms);
-      await updateCard({ id: terms[activeImageSearchIndex].id, imageUrl: imageUrl });
       
-      // Update local state as well
+      try {
+        setAutosaveStatus("Saving...");
+        
+        // Ensure we have a setId for the card
+        let currentSetId = setId;
+        if (!currentSetId) {
+          // If the set doesn't exist yet, create it
+          const res = await createSet({ 
+            title: title, 
+            description: description, 
+            folderId: folderId, 
+            userId: user.id, 
+            isDraft: true, 
+            statusId: 1, 
+            cardCount: terms.length 
+          });
+          currentSetId = res?.data?.set.id;
+          setSetId(currentSetId);
+        }
+        
+        // Now handle the card
+        const term = newTerms[activeImageSearchIndex];
+        
+        if (term.id) {
+          // If card exists, just update the image
+          await updateCard({ 
+            id: term.id, 
+            imageUrl: imageUrl,
+            setId: currentSetId
+          });
+          toast.success("Image updated");
+        } else {
+          // If it's a new card, create it with the image
+          const res = await createCard({
+            setId: currentSetId,
+            term: term.term,
+            definition: term.definition,
+            imageUrl: imageUrl
+          });
+          
+          // Update the card ID in local state
+          if (res?.data?.card?.id) {
+            newTerms[activeImageSearchIndex].id = res.data.card.id;
+            setTerms(newTerms);
+            toast.success("Card created with image");
+          }
+        }
+        
+        setAutosaveStatus("Saved");
+        setLastSaveTime(new Date());
+        setTimeSinceLastSave("0s");
+      } catch (error) {
+        console.error("Error saving card with image:", error);
+        setAutosaveStatus("Error saving data");
+        toast.error("Failed to save card with image");
+      }
       
       setActiveImageSearchIndex(null);
       setImageSearchResults([]);
@@ -203,6 +258,20 @@ export default function CreateSetPage() {
     const newTerms = [...terms];
     newTerms[index].imageUrl = "";
     setTerms(newTerms);
+    
+    // If the card has an ID, update it on the server
+    if (newTerms[index].id) {
+      updateCard({ id: newTerms[index].id, imageUrl: "" })
+        .then(() => {
+          toast.success("Image removed");
+        })
+        .catch((error) => {
+          console.error("Error removing image:", error);
+          toast.error("Failed to remove image");
+        });
+    } else {
+      toast.success("Image removed");
+    }
   };
 
   const handleSubmit = async () => {

@@ -113,7 +113,7 @@ export default function LoginPage() {
             <CardFooter className="flex flex-col space-y-4">
               <Button
                 type="submit"
-                className="w-full bg-primary-600 hover:bg-primary-700 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-black transition-colors"
+                className="w-full bg-primary-600 hover:bg-primary-700 border border-input text-dark dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-black transition-colors"
               >
                 Sign in
               </Button>

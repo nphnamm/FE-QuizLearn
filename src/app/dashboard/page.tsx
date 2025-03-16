@@ -1,21 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSelector, useDispatch } from "react-redux";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { DonutChart } from "@/components/charts/DonutChart";
-import { LineChart } from "@/components/charts/LineChart";
-import { MetricCard } from "@/components/dashboard/MetricCard";
-import { CampaignTable } from "@/components/dashboard/CampaignTable";
-import { Sidebar } from "@/components/dashboard/Sidebar";
-import { Bell, Settings } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import Protected from "@/hooks/useProtected";
+import { Bell, Settings, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
+import { Sidebar } from "@/components/dashboard/Sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
+
 const navigationItems = [
   { name: "Dashboard", href: "/dashboard", current: true },
   { name: "Project", href: "/project", current: false },
@@ -28,7 +25,57 @@ const navigationItems = [
 export default function DashboardPage() {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [activeTab, setActiveTab] = useState("studying");
+
+  // Mock data for the study lists
+  const studyLists = [
+    { id: 26, title: "List 26", studiedTime: "7 minutes ago" },
+    { id: 25, title: "List 25", studiedTime: "13 minutes ago" },
+    { id: 24, title: "List 24", studiedTime: "20 hours ago" },
+    { id: 23, title: "List 23", studiedTime: "3 days ago" },
+  ];
+
+  // Calendar state and functions
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<number | null>(null);
+  
+  // Current month and year
+  const currentMonth = currentDate.toLocaleString('default', { month: 'long' });
+  const currentYear = currentDate.getFullYear();
+  const daysOfWeek = ["S", "M", "T", "W", "T", "F", "S"];
+  
+  // Mock data for highlighted dates in the calendar (dates with study sessions)
+  const highlightedDates = [3, 7, 10, 12, 14, 15];
+  
+  // Get days in current month and first day of month
+  const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
+  const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
+  
+  const month = currentDate.getMonth();
+  const year = currentDate.getFullYear();
+  const daysInMonth = getDaysInMonth(year, month);
+  const firstDayOfMonth = getFirstDayOfMonth(year, month);
+  
+  // Calendar days array
+  const calendarDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  
+  // Previous and next month navigation
+  const goToPreviousMonth = () => {
+    setCurrentDate(new Date(year, month - 1, 1));
+    setSelectedDate(null);
+  };
+  
+  const goToNextMonth = () => {
+    setCurrentDate(new Date(year, month + 1, 1));
+    setSelectedDate(null);
+  };
+  
+  // Select a date
+  const handleDateSelect = (day: number) => {
+    setSelectedDate(day);
+    // Here you would typically fetch study data for this date
+    console.log(`Selected date: ${currentMonth} ${day}, ${currentYear}`);
+  };
 
   return (
     <Protected>
@@ -101,7 +148,6 @@ export default function DashboardPage() {
 
               {/* Right side icons and profile */}
               <div className="flex items-center gap-4">
-
                 <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full">
                   <ThemeToggle />
                   <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
@@ -140,126 +186,164 @@ export default function DashboardPage() {
             isSidebarOpen ? "pl-64" : "pl-20"
           )}
         >
-          <div className="bg-[#1a1a1a] text-white min-h-screen">
-            <div className="max-w-[1400px] mx-auto p-8 space-y-8">
-              {/* Dashboard Header */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <h1 className="text-2xl font-semibold">Overview</h1>
+          <div className="bg-gray-50 min-h-screen py-8">
+            <div className="max-w-[1200px] mx-auto px-6">
+              {/* Widgets Section */}
+              <div className="mb-8">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold">Widgets</h2>
+                  <Button variant="ghost" size="sm">
+                    <ChevronUp className="h-5 w-5" />
+                  </Button>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="bg-[#2a2a2a] rounded-lg px-4 py-2 text-sm text-gray-300">
-                    30 days Oct 16/21 - Nov 14/21
-                  </div>
-                </div>
-              </div>
-
-              {/* Top Row */}
-              <div className="grid grid-cols-3 gap-8">
-                {/* Summary Card */}
-                <Card className="bg-[#2a2a2a]/50 backdrop-blur p-6">
-                  <h2 className="text-xl font-medium mb-4">Summary</h2>
-                  <div className="space-y-3">
-                    {["Overview", "Campaigns", "Ad Group", "Keywords"].map(
-                      (item) => (
-                        <div
-                          key={item}
-                          className="flex items-center justify-between bg-[#3a3a3a]/50 p-3 rounded-lg"
-                        >
-                          <span className="text-gray-300">{item}</span>
-                          <span>1,552</span>
+                
+                <div className="grid grid-cols-3 gap-6">
+                  {/* Left Column - Study Lists */}
+                  <Card className="p-6 col-span-1">
+                    <Tabs defaultValue="studying" className="w-full">
+                      <TabsList className="grid w-full grid-cols-2 mb-6">
+                        <TabsTrigger value="studying">Studying</TabsTrigger>
+                        <TabsTrigger value="recent">Recent</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="studying" className="space-y-4">
+                        {studyLists.map((list) => (
+                          <div key={list.id} className="flex items-center justify-between border-b pb-4">
+                            <div className="flex items-center gap-3">
+                              <div className="bg-gray-100 p-2 rounded">
+                                <svg className="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="2" />
+                                  <path d="M8 10H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                                  <path d="M8 14H12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                                </svg>
+                              </div>
+                              <div>
+                                <h3 className="font-medium">{list.title}</h3>
+                                <p className="text-sm text-gray-500">Studied {list.studiedTime}</p>
+                              </div>
+                            </div>
+                            <Button variant="outline" size="sm" className="rounded-full">
+                              Resume
+                            </Button>
+                          </div>
+                        ))}
+                      </TabsContent>
+                      
+                      <TabsContent value="recent">
+                        <p className="text-gray-500">Your recent activities will appear here.</p>
+                      </TabsContent>
+                    </Tabs>
+                  </Card>
+                  
+                  {/* Middle Column - Calendar */}
+                  <Card className="p-6 col-span-1">
+                    <div className="flex items-center justify-between mb-6">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={goToPreviousMonth}
+                        className="hover:bg-gray-100"
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </Button>
+                      
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium">{currentMonth} {currentYear}</h3>
+                        <div className="flex items-center text-orange-500">
+                          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                          </svg>
+                          <span>2</span>
                         </div>
-                      )
-                    )}
-                  </div>
-                </Card>
-
-                {/* Top 5 Products Card */}
-                <Card className="bg-[#2a2a2a]/50 backdrop-blur p-6">
-                  <h2 className="text-xl font-medium mb-4">
-                    Top 5 products by spend
-                  </h2>
-                  <div className="relative h-[200px]">
-                    <DonutChart
-                      data={[
-                        { value: 60, color: "#4ade80" },
-                        { value: 25, color: "#fbbf24" },
-                        { value: 15, color: "#f87171" },
-                      ]}
-                      total={2985}
-                    />
-                  </div>
-                </Card>
-
-                {/* Highest ACoS Campaigns */}
-                <Card className="bg-[#2a2a2a]/50 backdrop-blur p-6">
-                  <h2 className="text-xl font-medium mb-4">
-                    Highest ACoS campaigns
-                  </h2>
-                  <CampaignTable />
-                </Card>
-              </div>
-
-              {/* Metrics Row */}
-              <div className="grid grid-cols-6 gap-4">
-                <MetricCard
-                  title="Orders Created"
-                  value="$134,970"
-                  change={12.49}
-                  trend="up"
-                />
-                <MetricCard
-                  title="Total Sales"
-                  value="$2,145,132.80"
-                  change={-4.95}
-                  trend="down"
-                />
-                <MetricCard
-                  title="PPC Sales"
-                  value="$890.00"
-                  change={6.07}
-                  trend="up"
-                />
-                <MetricCard
-                  title="Units Sales"
-                  value="151,740"
-                  change={0}
-                  trend="neutral"
-                />
-                <MetricCard
-                  title="Organic Sales Rate"
-                  value="100.00%"
-                  change={0.12}
-                  trend="up"
-                />
-                <MetricCard
-                  title="Refunds"
-                  value="-$134"
-                  change={0}
-                  trend="neutral"
-                />
-              </div>
-
-              {/* Charts Row */}
-              <div className="grid grid-cols-2 gap-8">
-                <Card className="bg-[#2a2a2a]/50 backdrop-blur p-6">
-                  <h2 className="text-xl font-medium mb-4">Costs</h2>
-                  <div className="h-[200px]">
-                    <LineChart
-                      data={[4, 6, 5, 7, 5, 8, 6, 4]}
-                      color="#4ade80"
-                    />
-                  </div>
-                </Card>
-                <Card className="bg-[#2a2a2a]/50 backdrop-blur p-6">
-                  <h2 className="text-xl font-medium mb-4">ACoS vs TACoS</h2>
-                  <div className="h-[200px]">
-                    <LineChart
-                      data={[5, 7, 6, 8, 7, 9, 8, 6]}
-                      color="#fbbf24"
-                    />
-                  </div>
-                </Card>
+                      </div>
+                      
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={goToNextMonth}
+                        className="hover:bg-gray-100"
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </Button>
+                    </div>
+                    
+                    {/* Calendar grid header */}
+                    <div className="grid grid-cols-7 gap-1 mb-2">
+                      {daysOfWeek.map((day) => (
+                        <div key={day} className="text-center text-sm font-medium">
+                          {day}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Calendar days */}
+                    <div className="grid grid-cols-7 gap-1">
+                      {/* Empty cells for days before month start */}
+                      {Array.from({ length: firstDayOfMonth }).map((_, index) => (
+                        <div key={`empty-${index}`} className="aspect-square"></div>
+                      ))}
+                      
+                      {calendarDays.map((day) => {
+                        const isHighlighted = highlightedDates.includes(day);
+                        const isSelected = selectedDate === day;
+                        const isToday = new Date().getDate() === day && 
+                                       new Date().getMonth() === month && 
+                                       new Date().getFullYear() === year;
+                        
+                        return (
+                          <div 
+                            key={day} 
+                            onClick={() => handleDateSelect(day)}
+                            className={cn(
+                              "aspect-square flex items-center justify-center text-sm rounded-full cursor-pointer transition-colors",
+                              isHighlighted && !isSelected && !isToday && "bg-orange-100 text-orange-500",
+                              isToday && !isSelected && "bg-orange-500 text-white",
+                              isSelected && "bg-blue-500 text-white ring-2 ring-blue-300",
+                              !isHighlighted && !isSelected && !isToday && "hover:bg-gray-100"
+                            )}
+                          >
+                            {day}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </Card>
+                  
+                  {/* Right Column - User Profile */}
+                  <Card className="p-6 col-span-1">
+                    <div className="flex flex-col items-center text-center">
+                      <div className="w-24 h-24 rounded-full overflow-hidden mb-4">
+                        <Image 
+                          src="/avatar-placeholder.svg" 
+                          alt="User profile" 
+                          width={96} 
+                          height={96} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      
+                      <h3 className="text-lg font-bold mb-1">Nguyễn Nam Hoài Phan</h3>
+                      <p className="text-sm text-gray-500 mb-4">@nphnam | Joined 1/29/25</p>
+                      
+                      <div className="w-full mb-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <h4 className="font-medium">Level 23</h4>
+                          <div className="flex items-center gap-1 bg-purple-100 text-purple-600 px-2 py-1 rounded-full">
+                            <span className="text-xs">24</span>
+                          </div>
+                        </div>
+                        
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="bg-purple-600 h-2 rounded-full" style={{ width: '28%' }}></div>
+                        </div>
+                        
+                        <p className="text-sm text-gray-500 mt-1">182/650 XP</p>
+                      </div>
+                      
+                      <Button variant="outline" className="w-full">View badges</Button>
+                    </div>
+                  </Card>
+                </div>
               </div>
             </div>
           </div>
