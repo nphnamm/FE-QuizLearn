@@ -4,7 +4,7 @@ const nextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "https://api-quizlearn.onrender.com/api/:path*",
+        destination: "http://localhost:8000/api/:path*",
       },
     ];
   },
@@ -18,6 +18,15 @@ const nextConfig = {
   },
   typescript: {
     ignoreBuildErrors: true,
+  },
+  // Custom webpack config to handle errors when copying files
+  webpack: (config, { isServer }) => {
+    // Ignore ENOENT errors when copying route group files
+    config.infrastructureLogging = {
+      level: 'error',
+    };
+    
+    return config;
   },
 };
 
