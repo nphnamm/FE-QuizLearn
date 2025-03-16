@@ -1,12 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
-import { LayoutGrid, Store, Box, Users, Settings, HelpCircle, ChevronLeft } from "lucide-react";
+import { LayoutGrid, Store, Box, Users, Settings, HelpCircle, ChevronLeft, Folder } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 
 const mainMenuItems = [
   { name: "Overview", icon: LayoutGrid, href: "/dashboard" },
-  { name: "Folder", icon: Store, href: "/folder" },
+  { name: "Folder", icon: Folder, href: "/folder" },
   { name: "Explore", icon: Box, href: "/explore" },
   { name: "AI", icon: Users, href: "/ai" },
 ];

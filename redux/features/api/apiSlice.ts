@@ -6,7 +6,7 @@ const tagTypes = ['Card', 'Set', 'FolderSets', 'AllSets', 'UserSets'] as const;
 
 export const apiSlice = createApi({
   reducerPath: "api",
-  baseQuery: fetchBaseQuery({ baseUrl: "https://api-quizlearn.onrender.com/api/v1" }),
+  baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_SERVER_URI }),
   tagTypes: tagTypes,
   endpoints: (builder) => ({
     refreshToken: builder.query({

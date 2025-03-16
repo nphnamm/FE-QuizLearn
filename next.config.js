@@ -4,7 +4,7 @@ const nextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "https://api-quizlearn.onrender.com/api/:path*",
+        destination: process.env.NEXT_PUBLIC_SERVER_URI + "/api/:path*",
       },
     ];
   },

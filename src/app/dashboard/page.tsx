@@ -10,8 +10,8 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import Protected from "@/hooks/useProtected";
 import { Bell, Settings, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
-import { Sidebar } from "@/components/dashboard/Sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { PageLayout } from "@/components/layout/PageLayout";
 
 const navigationItems = [
   { name: "Dashboard", href: "/dashboard", current: true },
@@ -24,7 +24,6 @@ const navigationItems = [
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("studying");
 
   // Mock data for the study lists
@@ -79,276 +78,169 @@ export default function DashboardPage() {
 
   return (
     <Protected>
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header
-          className={cn(
-            "bg-white border-b border-gray-200 fixed top-0 right-0 z-40 transition-all duration-300",
-            isSidebarOpen ? "left-64" : "left-20"
-          )}
-        >
-          <div className="px-6">
-            <div className="flex h-16 items-center justify-between">
-              {/* Left side with logo and navigation */}
-              <div className="flex items-center gap-8">
-                <button
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                  className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    {isSidebarOpen ? (
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 6h16M4 12h16M4 18h16"
-                      />
-                    ) : (
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 6h16M4 12h16M4 18h16"
-                      />
-                    )}
-                  </svg>
-                </button>
-                <Link href="/dashboard" className="flex items-center gap-2">
-                  <Image
-                    src="/fusion-logo.svg"
-                    alt="Fusion"
-                    width={24}
-                    height={24}
-                    className="w-6 h-6"
-                  />
-                  <span className="text-lg font-semibold">Fusion</span>
-                </Link>
-                <nav className="flex items-center gap-6">
-                  {navigationItems.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className={cn(
-                        "text-sm font-medium px-4 py-1.5 rounded-full transition-colors",
-                        item.current
-                          ? "bg-[#1a1a1a] text-white"
-                          : "text-gray-600 hover:text-gray-900"
-                      )}
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                </nav>
+      <PageLayout>
+        <div className="bg-gray-50 min-h-screen py-8">
+          <div className="max-w-[1200px] mx-auto px-6">
+            {/* Widgets Section */}
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">Widgets</h2>
+                <Button variant="ghost" size="sm">
+                  <ChevronUp className="h-5 w-5" />
+                </Button>
               </div>
-
-              {/* Right side icons and profile */}
-              <div className="flex items-center gap-4">
-                <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full">
-                  <ThemeToggle />
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
-                </button>
-                <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full">
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
-                </button>
-                <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full">
-                  <Settings className="w-5 h-5" />
-                </button>
-                <div className="w-8 h-8 rounded-full overflow-hidden">
-                  <Image
-                    src="/avatar-placeholder.svg"
-                    alt="User"
-                    width={32}
-                    height={32}
-                    className="w-full h-full"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Sidebar */}
-        <Sidebar
-          isOpen={isSidebarOpen}
-          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        />
-
-        {/* Main Content */}
-        <div
-          className={cn(
-            "transition-all duration-300 pt-16",
-            isSidebarOpen ? "pl-64" : "pl-20"
-          )}
-        >
-          <div className="bg-gray-50 min-h-screen py-8">
-            <div className="max-w-[1200px] mx-auto px-6">
-              {/* Widgets Section */}
-              <div className="mb-8">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold">Widgets</h2>
-                  <Button variant="ghost" size="sm">
-                    <ChevronUp className="h-5 w-5" />
-                  </Button>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-6">
-                  {/* Left Column - Study Lists */}
-                  <Card className="p-6 col-span-1">
-                    <Tabs defaultValue="studying" className="w-full">
-                      <TabsList className="grid w-full grid-cols-2 mb-6">
-                        <TabsTrigger value="studying">Studying</TabsTrigger>
-                        <TabsTrigger value="recent">Recent</TabsTrigger>
-                      </TabsList>
-                      
-                      <TabsContent value="studying" className="space-y-4">
-                        {studyLists.map((list) => (
-                          <div key={list.id} className="flex items-center justify-between border-b pb-4">
-                            <div className="flex items-center gap-3">
-                              <div className="bg-gray-100 p-2 rounded">
-                                <svg className="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="2" />
-                                  <path d="M8 10H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                                  <path d="M8 14H12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                                </svg>
-                              </div>
-                              <div>
-                                <h3 className="font-medium">{list.title}</h3>
-                                <p className="text-sm text-gray-500">Studied {list.studiedTime}</p>
-                              </div>
+              
+              <div className="grid grid-cols-3 gap-6">
+                {/* Left Column - Study Lists */}
+                <Card className="p-6 col-span-1">
+                  <Tabs defaultValue="studying" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-6">
+                      <TabsTrigger value="studying">Studying</TabsTrigger>
+                      <TabsTrigger value="recent">Recent</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="studying" className="space-y-4">
+                      {studyLists.map((list) => (
+                        <div key={list.id} className="flex items-center justify-between border-b pb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="bg-gray-100 p-2 rounded">
+                              <svg className="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="2" />
+                                <path d="M8 10H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                                <path d="M8 14H12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                              </svg>
                             </div>
-                            <Button variant="outline" size="sm" className="rounded-full">
-                              Resume
-                            </Button>
+                            <div>
+                              <h3 className="font-medium">{list.title}</h3>
+                              <p className="text-sm text-gray-500">Studied {list.studiedTime}</p>
+                            </div>
                           </div>
-                        ))}
-                      </TabsContent>
-                      
-                      <TabsContent value="recent">
-                        <p className="text-gray-500">Your recent activities will appear here.</p>
-                      </TabsContent>
-                    </Tabs>
-                  </Card>
-                  
-                  {/* Middle Column - Calendar */}
-                  <Card className="p-6 col-span-1">
-                    <div className="flex items-center justify-between mb-6">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        onClick={goToPreviousMonth}
-                        className="hover:bg-gray-100"
-                      >
-                        <ChevronLeft className="h-5 w-5" />
-                      </Button>
-                      
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-medium">{currentMonth} {currentYear}</h3>
-                        <div className="flex items-center text-orange-500">
-                          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                          </svg>
-                          <span>2</span>
+                          <Button variant="outline" size="sm" className="rounded-full">
+                            Resume
+                          </Button>
                         </div>
+                      ))}
+                    </TabsContent>
+                    
+                    <TabsContent value="recent">
+                      <p className="text-gray-500">Your recent activities will appear here.</p>
+                    </TabsContent>
+                  </Tabs>
+                </Card>
+                
+                {/* Middle Column - Calendar */}
+                <Card className="p-6 col-span-1">
+                  <div className="flex items-center justify-between mb-6">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={goToPreviousMonth}
+                      className="hover:bg-gray-100"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </Button>
+                    
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium">{currentMonth} {currentYear}</h3>
+                      <div className="flex items-center text-orange-500">
+                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                        </svg>
+                        <span>2</span>
                       </div>
-                      
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        onClick={goToNextMonth}
-                        className="hover:bg-gray-100"
-                      >
-                        <ChevronRight className="h-5 w-5" />
-                      </Button>
                     </div>
                     
-                    {/* Calendar grid header */}
-                    <div className="grid grid-cols-7 gap-1 mb-2">
-                      {daysOfWeek.map((day) => (
-                        <div key={day} className="text-center text-sm font-medium">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={goToNextMonth}
+                      className="hover:bg-gray-100"
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </Button>
+                  </div>
+                  
+                  {/* Calendar grid header */}
+                  <div className="grid grid-cols-7 gap-1 mb-2">
+                    {daysOfWeek.map((day) => (
+                      <div key={day} className="text-center text-sm font-medium">
+                        {day}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Calendar days */}
+                  <div className="grid grid-cols-7 gap-1">
+                    {/* Empty cells for days before month start */}
+                    {Array.from({ length: firstDayOfMonth }).map((_, index) => (
+                      <div key={`empty-${index}`} className="aspect-square"></div>
+                    ))}
+                    
+                    {calendarDays.map((day) => {
+                      const isHighlighted = highlightedDates.includes(day);
+                      const isSelected = selectedDate === day;
+                      const isToday = new Date().getDate() === day && 
+                                     new Date().getMonth() === month && 
+                                     new Date().getFullYear() === year;
+                      
+                      return (
+                        <div 
+                          key={day} 
+                          onClick={() => handleDateSelect(day)}
+                          className={cn(
+                            "aspect-square flex items-center justify-center text-sm rounded-full cursor-pointer transition-colors",
+                            isHighlighted && !isSelected && !isToday && "bg-orange-100 text-orange-500",
+                            isToday && !isSelected && "bg-orange-500 text-white",
+                            isSelected && "bg-blue-500 text-white ring-2 ring-blue-300",
+                            !isHighlighted && !isSelected && !isToday && "hover:bg-gray-100"
+                          )}
+                        >
                           {day}
                         </div>
-                      ))}
+                      );
+                    })}
+                  </div>
+                </Card>
+                
+                {/* Right Column - User Profile */}
+                <Card className="p-6 col-span-1">
+                  <div className="flex flex-col items-center text-center">
+                    <div className="w-24 h-24 rounded-full overflow-hidden mb-4">
+                      <Image 
+                        src="/avatar-placeholder.svg" 
+                        alt="User profile" 
+                        width={96} 
+                        height={96} 
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     
-                    {/* Calendar days */}
-                    <div className="grid grid-cols-7 gap-1">
-                      {/* Empty cells for days before month start */}
-                      {Array.from({ length: firstDayOfMonth }).map((_, index) => (
-                        <div key={`empty-${index}`} className="aspect-square"></div>
-                      ))}
-                      
-                      {calendarDays.map((day) => {
-                        const isHighlighted = highlightedDates.includes(day);
-                        const isSelected = selectedDate === day;
-                        const isToday = new Date().getDate() === day && 
-                                       new Date().getMonth() === month && 
-                                       new Date().getFullYear() === year;
-                        
-                        return (
-                          <div 
-                            key={day} 
-                            onClick={() => handleDateSelect(day)}
-                            className={cn(
-                              "aspect-square flex items-center justify-center text-sm rounded-full cursor-pointer transition-colors",
-                              isHighlighted && !isSelected && !isToday && "bg-orange-100 text-orange-500",
-                              isToday && !isSelected && "bg-orange-500 text-white",
-                              isSelected && "bg-blue-500 text-white ring-2 ring-blue-300",
-                              !isHighlighted && !isSelected && !isToday && "hover:bg-gray-100"
-                            )}
-                          >
-                            {day}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </Card>
-                  
-                  {/* Right Column - User Profile */}
-                  <Card className="p-6 col-span-1">
-                    <div className="flex flex-col items-center text-center">
-                      <div className="w-24 h-24 rounded-full overflow-hidden mb-4">
-                        <Image 
-                          src="/avatar-placeholder.svg" 
-                          alt="User profile" 
-                          width={96} 
-                          height={96} 
-                          className="w-full h-full object-cover"
-                        />
+                    <h3 className="text-lg font-bold mb-1">Nguyễn Nam Hoài Phan</h3>
+                    <p className="text-sm text-gray-500 mb-4">@nphnam | Joined 1/29/25</p>
+                    
+                    <div className="w-full mb-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="font-medium">Level 23</h4>
+                        <div className="flex items-center gap-1 bg-purple-100 text-purple-600 px-2 py-1 rounded-full">
+                          <span className="text-xs">24</span>
+                        </div>
                       </div>
                       
-                      <h3 className="text-lg font-bold mb-1">Nguyễn Nam Hoài Phan</h3>
-                      <p className="text-sm text-gray-500 mb-4">@nphnam | Joined 1/29/25</p>
-                      
-                      <div className="w-full mb-4">
-                        <div className="flex justify-between items-center mb-2">
-                          <h4 className="font-medium">Level 23</h4>
-                          <div className="flex items-center gap-1 bg-purple-100 text-purple-600 px-2 py-1 rounded-full">
-                            <span className="text-xs">24</span>
-                          </div>
-                        </div>
-                        
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-purple-600 h-2 rounded-full" style={{ width: '28%' }}></div>
-                        </div>
-                        
-                        <p className="text-sm text-gray-500 mt-1">182/650 XP</p>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-purple-600 h-2 rounded-full" style={{ width: '28%' }}></div>
                       </div>
                       
-                      <Button variant="outline" className="w-full">View badges</Button>
+                      <p className="text-sm text-gray-500 mt-1">182/650 XP</p>
                     </div>
-                  </Card>
-                </div>
+                    
+                    <Button variant="outline" className="w-full">View badges</Button>
+                  </div>
+                </Card>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </PageLayout>
     </Protected>
   );
 }

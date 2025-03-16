@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useCreateFolderMutation, useGetFoldersByUserIdQuery } from "../../../redux/features/folders/foldersApi";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { PageLayout } from "@/components/layout/PageLayout";
 
 interface Folder {
   id: string;
@@ -85,91 +86,10 @@ export default function FolderPage() {
     <Protected>
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
-        <header
-          className={cn(
-            "bg-background border-b border-border fixed top-0 right-0 z-40 transition-all duration-300",
-            isSidebarOpen ? "left-64" : "left-20"
-          )}
-        >
-          <div className="px-6">
-            <div className="flex h-16 items-center justify-between">
-              {/* Left side with logo and navigation */}
-              <div className="flex items-center gap-8">
-                <button
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                  className="p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors"
-                >
-                  <Folder className="w-5 h-5" />
-                </button>
-                <Link href="/dashboard" className="flex items-center gap-2">
-                  <Image
-                    src="/fusion-logo.svg"
-                    alt="Fusion"
-                    width={24}
-                    height={24}
-                    className="w-6 h-6"
-                  />
-                  <span className="text-lg font-semibold text-foreground">Fusion</span>
-                </Link>
-                <nav className="flex items-center gap-6">
-                  {navigationItems.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className={cn(
-                        "text-sm font-medium px-4 py-1.5 rounded-full transition-colors",
-                        item.current
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                </nav>
-              </div>
-
-              {/* Right side icons and profile */}
-              <div className="flex items-center gap-4">
-
-                <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full">
-                  <ThemeToggle />
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
-                </button>
-                <button className="relative p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-colors">
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-destructive rounded-full ring-2 ring-background" />
-                </button>
-                <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-colors">
-                  <Settings className="w-5 h-5" />
-                </button>
-                <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-border">
-                  <Image
-                    src="/avatar-placeholder.svg"
-                    alt="User"
-                    width={32}
-                    height={32}
-                    className="w-full h-full"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Sidebar */}
-        <Sidebar
-          isOpen={isSidebarOpen}
-          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        />
 
         {/* Main Content */}
-        <div
-          className={cn(
-            "transition-all duration-300 pt-16",
-            isSidebarOpen ? "pl-64" : "pl-20"
-          )}
-        >
+        <PageLayout>
+
           <div className="bg-background min-h-screen">
             <div className="max-w-[1400px] mx-auto p-8 space-y-8">
               {/* Dashboard Header */}
@@ -263,7 +183,8 @@ export default function FolderPage() {
               </div>
             </div>
           </div>
-        </div>
+        </PageLayout>
+
       </div>
     </Protected>
   );

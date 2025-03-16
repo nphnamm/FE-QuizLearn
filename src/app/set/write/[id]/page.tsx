@@ -123,40 +123,33 @@ export default function WriteModePage() {
 
   const handleSubmitAnswer = async () => {
     if (!userAnswer.trim()) return;
-  
+
     setAnswerSubmitted(true);
-  
-    // Loại bỏ nội dung trong dấu ngoặc ()
-    const cleanTerm = cards[currentCardIndex].term
-      .toLowerCase()
-      .replace(/\s*\([^)]*\)/g, "") // Xóa phần trong ()
-      .trim();
-  
+    
+    // Improved answer validation
+    const currentTerm = cards[currentCardIndex].term.toLowerCase().trim();
     const userTerm = userAnswer.toLowerCase().trim();
-  
-    // Kiểm tra chính xác
-    const isExactMatch = userTerm === cleanTerm;
-  
-    // Kiểm tra sai 1 ký tự cuối cùng (thừa hoặc thiếu)
-    const isOneCharOff =
-      (userTerm.length === cleanTerm.length + 1 && userTerm.slice(0, -1) === cleanTerm) || 
-      (userTerm.length === cleanTerm.length - 1 && cleanTerm.slice(0, -1) === userTerm);
-  
-    const correct = isExactMatch || isOneCharOff;
-  
+    
+    // Check if answer is correct using more sophisticated matching
+    const correct = 
+      userTerm === currentTerm || 
+      currentTerm.includes(userTerm) || 
+      userTerm.includes(currentTerm) ||
+      (userTerm.length > 3 && 
+       currentTerm.split(" ").some(word => 
+         word.length > 3 && userTerm.includes(word.toLowerCase())));
+    
     setIsCorrect(correct);
     setShowFeedback(true);
-  
+    
     if (correct) {
-      setCorrectAnswers((prev) => prev + 1);
+      setCorrectAnswers(prev => prev + 1);
     }
-  
-    // Cập nhật tiến trình
+    
+    // Update progress
     await updateUserProgress(correct);
     setProgress(((currentCardIndex + 1) / cards.length) * 100);
   };
-  
-  
 
   const handleNextCard = () => {
     if (currentCardIndex < cards.length - 1) {
@@ -200,6 +193,7 @@ export default function WriteModePage() {
       </div>
     );
   }
+  console.log('c',cards[currentCardIndex]);
 
   return (
     <Protected>

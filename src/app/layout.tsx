@@ -4,7 +4,6 @@ import { Inter, Josefin_Sans, Poppins } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { ReduxProvider } from "@/providers/ReduxProvider";
-import { SidebarProvider } from "@/providers/sidebar-provider";
 import { Header } from "@/components/header";
 import { Toaster } from "@/components/providers/toaster";
 import { useEffect, useState } from "react";
@@ -47,12 +46,10 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <SidebarProvider>
-              <AuthProvider>
-                <Custom>{children}</Custom>
-              </AuthProvider>
-              <Toaster />
-            </SidebarProvider>
+            <AuthProvider>
+              <Custom>{children}</Custom>
+            </AuthProvider>
+            <Toaster />
           </ThemeProvider>
         </ReduxProvider>
       </body>

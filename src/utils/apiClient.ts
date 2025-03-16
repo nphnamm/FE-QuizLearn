@@ -2,7 +2,7 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosR
 import { store } from '../../redux/store';
 import { userLoggedIn, userLoggedOut } from '../../redux/features/auth/authSlice';
 
-const API_URL = 'https://api-quizlearn.onrender.com/api/v1';
+const API_URL = process.env.NEXT_PUBLIC_SERVER_URI;
 
 // Token refresh timer settings
 const TOKEN_REFRESH_INTERVAL = 1000 * 60 * 2.9; // 14 minutes (typical access tokens last 15 minutes)
