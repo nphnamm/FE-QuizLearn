@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -20,18 +20,24 @@ import { useLoginMutation } from "../../../../redux/features/auth/authApi";
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [login, { isError, data, isSuccess, error }] = useLoginMutation();
 
-  useEffect(() => {
-    if (searchParams?.get("registered")) {
-      toast.success("Registration successful! Please sign in.");
-    }
-    if (searchParams?.get("reset")) {
-      toast.success("Password reset successful! Please sign in.");
-    }
-  }, [searchParams]);
-
+  // Wrap searchParams related code in a client component
+  function SearchParamsHandler() {
+    const searchParams = useSearchParams();
+    
+    useEffect(() => {
+      if (searchParams?.get("registered")) {
+        toast.success("Registration successful! Please sign in.");
+      }
+      if (searchParams?.get("reset")) {
+        toast.success("Password reset successful! Please sign in.");
+      }
+    }, [searchParams]);
+    
+    return null;
+  }
+  
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -54,6 +60,9 @@ export default function LoginPage() {
   // Handle click outside modal
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-primary-100 to-primary-200 dark:bg-black">
+      <Suspense fallback={null}>
+        <SearchParamsHandler />
+      </Suspense>
       <div className="absolute inset-0 bg-gradient-radial from-white/20 to-transparent dark:from-zinc-800/20 pointer-events-none" />
       <div className="w-full max-w-md px-4 z-10">
         <div className="text-center mb-8">

@@ -1,9 +1,7 @@
-"use client";
-
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { useSelector } from "react-redux";
-import Protected from "@/hooks/useProtected";
+
+export const dynamic = 'force-dynamic';
 
 export default function Home() {
   
