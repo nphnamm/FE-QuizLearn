@@ -27,6 +27,7 @@ import {
   useRestartSessionMutation,
   useUpdateProgressMutation,
 } from "../../../../redux/features/userProgresses/userProgressesApi";
+import { PageLayout } from "@/components/layout/PageLayout";
 
 type StudyMode = "flashcards" | "learn" | "test";
 type LearnMode = "multiple-choice" | "write" | "flashcard";
@@ -120,27 +121,27 @@ export default function StudySetPage() {
       });
       // console.log("response", response);
       setUserSessionId(response.data?.sessionId);
-      
+
       // Get remaining cards from session response
       const remainingCards = response.data?.remainingCards || [];
-      
+
       // If there are remaining cards, filter out answered questions
       if (remainingCards.length > 0) {
         const remainingCardIds = new Set(remainingCards.map((card: Card) => card.id));
 
         const answered = data.sets.filter((card: Card) => !remainingCardIds.has(card.id));
-        
+
         // Update the states
         setCards(remainingCards);
         setAnsweredCards(answered);
-        
+
         // console.log("Answered cards:", answered.map((card: Card) => ({
         //   term: card.term,
         //   definition: card.definition,
         //   position: card.position
         // })));
       }
-      
+
       return response;
     } catch (error) {
       console.error("Failed to create user session:", error);
@@ -191,23 +192,23 @@ export default function StudySetPage() {
             definition: cards[currentCardIndex].definition,
             isCorrect: true
           },
-          { 
-            id: "1", 
+          {
+            id: "1",
             term: "Incorrect term 1",
             definition: "Incorrect definition 1",
-            isCorrect: false 
+            isCorrect: false
           },
-          { 
-            id: "2", 
+          {
+            id: "2",
             term: "Incorrect term 2",
             definition: "Incorrect definition 2",
-            isCorrect: false 
+            isCorrect: false
           },
-          { 
-            id: "3", 
+          {
+            id: "3",
             term: "Incorrect term 3",
             definition: "Incorrect definition 3",
-            isCorrect: false 
+            isCorrect: false
           }
         ]);
       }
@@ -221,23 +222,23 @@ export default function StudySetPage() {
           definition: cards[currentCardIndex].definition,
           isCorrect: true
         },
-        { 
-          id: "1", 
+        {
+          id: "1",
           term: "Incorrect term 1",
           definition: "Incorrect definition 1",
-          isCorrect: false 
+          isCorrect: false
         },
-        { 
-          id: "2", 
+        {
+          id: "2",
           term: "Incorrect term 2",
           definition: "Incorrect definition 2",
-          isCorrect: false 
+          isCorrect: false
         },
-        { 
-          id: "3", 
+        {
+          id: "3",
           term: "Incorrect term 3",
           definition: "Incorrect definition 3",
-          isCorrect: false 
+          isCorrect: false
         }
       ]);
     } finally {
@@ -290,6 +291,8 @@ export default function StudySetPage() {
     setCurrentMode(mode);
     if (mode === "learn") {
       setShowModeSelector(true);
+    } else if (mode === "test") {
+      router.push(`/set/test/${id}`);
     }
   };
 
@@ -417,209 +420,170 @@ export default function StudySetPage() {
   console.log('first', answerChoicesData)
   return (
     <Protected>
-      <div className="min-h-screen bg-gray-50">
-        <header
-          className={cn(
-            "bg-white border-b border-gray-200 fixed top-0 right-0 z-40 transition-all duration-300",
-            isSidebarOpen ? "left-64" : "left-20"
-          )}
-        >
-          <div className="flex h-16 items-center justify-between px-4">
-            <div className="flex items-center gap-8">
-              <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
-              >
-                <span className="sr-only">Toggle sidebar</span>
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
-              <h1 className="text-xl font-semibold">Study Set</h1>
-            </div>
-          </div>
-        </header>
-
-        <Sidebar
-          isOpen={isSidebarOpen}
-          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        />
-
-        <main
+      <PageLayout>
+        <div
           className={cn(
             "transition-all bg-background duration-300 pt-24 px-8",
-            isSidebarOpen ? "ml-64" : "ml-20"
+          
           )}
         >
-          <div className="max-w-4xl mx-auto">
-            <Tabs
-              defaultValue="flashcards"
-              className="w-full"
-              onValueChange={(value: any) => handleModeChange(value)}
-            >
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="flashcards">Flashcards</TabsTrigger>
-                <TabsTrigger value="learn">Learn</TabsTrigger>
-                <TabsTrigger value="test">Test</TabsTrigger>
-              </TabsList>
+          <Tabs
+            defaultValue="flashcards"
+            className="w-full"
+            onValueChange={(value: any) => handleModeChange(value)}
+          >
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="flashcards">Flashcards</TabsTrigger>
+              <TabsTrigger value="learn">Learn</TabsTrigger>
+              <TabsTrigger value="test">Test</TabsTrigger>
+            </TabsList>
 
-              <TabsContent value="flashcards" className="mt-6">
-                <div className="flex flex-col items-center">
-                  <div className="w-full max-w-2xl aspect-[3/2] relative">
-                    <Card
-                      className={cn(
-                        "w-full h-full cursor-pointer flex items-center justify-center p-8 text-2xl text-center",
-                        "transition-all duration-300",
-                        showContent
-                          ? "opacity-100 scale-100"
-                          : "opacity-0 scale-95"
-                      )}
-                      onClick={handleFlipCard}
-                    >
-                      <CardContent className="flex items-center justify-center h-full">
-                        {isFlipped ? (
-                          <span>
-                            {cards[currentCardIndex]?.definition ||
-                              "No definition available"}
-                          </span>
-                        ) : (
-                          <span>
-                            {cards[currentCardIndex]?.term ||
-                              "No term available"}
-                          </span>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
-                  <div className="flex gap-4 mt-6">
-                    <Button onClick={handlePrevCard}>Previous</Button>
-                    <Button onClick={handleNextCard}>Next</Button>
-                  </div>
-                  <div className="mt-4 text-sm text-gray-500">
-                    Card {currentCardIndex + 1} of {cards.length + answeredCards.length}
-                  </div>
-                </div>
-              </TabsContent>
-
-            </Tabs>
-
-            {/* Modal for selecting Learn mode */}
-            <Dialog open={showModeSelector} onOpenChange={setShowModeSelector}>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Choose Study Mode</DialogTitle>
-                  <DialogDescription>
-                    Select how you want to study this set
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <RadioGroup
-                    defaultValue="multiple-choice"
-                    className="grid grid-cols-1 gap-4"
-                    value={learnMode}
-                    onValueChange={(value: LearnMode) => setLearnMode(value)}
+            <TabsContent value="flashcards" className="mt-6">
+              <div className="flex flex-col items-center">
+                <div className="w-full max-w-2xl aspect-[3/2] relative">
+                  <Card
+                    className={cn(
+                      "w-full h-full cursor-pointer flex items-center justify-center p-8 text-2xl text-center",
+                      "transition-all duration-300",
+                      showContent
+                        ? "opacity-100 scale-100"
+                        : "opacity-0 scale-95"
+                    )}
+                    onClick={handleFlipCard}
                   >
-                    <div className="flex items-center space-x-2 border p-4 rounded-lg hover:bg-gray-50 cursor-pointer">
-                      <RadioGroupItem
-                        value="multiple-choice"
-                        id="multiple-choice"
-                      />
-                      <Label
-                        htmlFor="multiple-choice"
-                        className="flex flex-col cursor-pointer flex-grow"
-                      >
-                        <span className="font-medium">Multiple Choice</span>
-                        <span className="text-sm text-gray-500">
-                          Test your knowledge with multiple choice questions
+                    <CardContent className="flex items-center justify-center h-full">
+                      {isFlipped ? (
+                        <span>
+                          {cards[currentCardIndex]?.definition ||
+                            "No definition available"}
                         </span>
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2 border p-4 rounded-lg hover:bg-gray-50 cursor-pointer">
-                      <RadioGroupItem value="write" id="write" />
-                      <Label
-                        htmlFor="write"
-                        className="flex flex-col cursor-pointer flex-grow"
-                      >
-                        <span className="font-medium">Write</span>
-                        <span className="text-sm text-gray-500">
-                          Practice writing the definitions
+                      ) : (
+                        <span>
+                          {cards[currentCardIndex]?.term ||
+                            "No term available"}
                         </span>
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2 border p-4 rounded-lg hover:bg-gray-50 cursor-pointer">
-                      <RadioGroupItem value="flashcard" id="flashcard" />
-                      <Label
-                        htmlFor="flashcard"
-                        className="flex flex-col cursor-pointer flex-grow"
-                      >
-                        <span className="font-medium">Flashcard</span>
-                        <span className="text-sm text-gray-500">
-                          Study with interactive flashcards
-                        </span>
-                      </Label>
-                    </div>
-                  </RadioGroup>
-
-                  <div className="flex justify-end mt-4">
-                    <Button
-                      className="px-8"
-                      onClick={() => handleLearnModeSelect(learnMode)}
-                    >
-                      Start
-                    </Button>
-                  </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 </div>
-              </DialogContent>
-            </Dialog>
-
-            <Dialog
-              open={isCompletedSession && showTestResults}
-              onOpenChange={setIsCompletedSession}
-            >
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>You have finished this set</DialogTitle>
-                  <DialogDescription>
-                    Would you like to start over?
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="flex justify-end mt-4">
-                    <Button className="px-8" onClick={handleStartOver}>
-                      Start Over
-                    </Button>
-                  </div>
+                <div className="flex gap-4 mt-6">
+                  <Button onClick={handlePrevCard}>Previous</Button>
+                  <Button onClick={handleNextCard}>Next</Button>
                 </div>
-              </DialogContent>
-            </Dialog>
-
-            {/* Display All Cards Below the Tabs */}
-            {currentMode !== "learn" && currentMode !== "test" && (
-              <div className="mt-8">
-                <h2 className="text-2xl font-semibold mb-4">All Cards</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {cards.map((card) => (
-                    <Card key={card.id} className="p-4">
-                      <h3 className="text-lg font-semibold">{card.term}</h3>
-                      <p className="text-gray-600">{card.definition}</p>
-                    </Card>
-                  ))}
+                <div className="mt-4 text-sm text-gray-500">
+                  Card {currentCardIndex + 1} of {cards.length + answeredCards.length}
                 </div>
               </div>
-            )}
-          </div>
-        </main>
-      </div>
+            </TabsContent>
+
+          </Tabs>
+
+          {/* Modal for selecting Learn mode */}
+          <Dialog open={showModeSelector} onOpenChange={setShowModeSelector}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Choose Study Mode</DialogTitle>
+                <DialogDescription>
+                  Select how you want to study this set
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <RadioGroup
+                  defaultValue="multiple-choice"
+                  className="grid grid-cols-1 gap-4"
+                  value={learnMode}
+                  onValueChange={(value: LearnMode) => setLearnMode(value)}
+                >
+                  <div className="flex items-center space-x-2 border p-4 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <RadioGroupItem
+                      value="multiple-choice"
+                      id="multiple-choice"
+                    />
+                    <Label
+                      htmlFor="multiple-choice"
+                      className="flex flex-col cursor-pointer flex-grow"
+                    >
+                      <span className="font-medium">Multiple Choice</span>
+                      <span className="text-sm text-gray-500">
+                        Test your knowledge with multiple choice questions
+                      </span>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2 border p-4 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <RadioGroupItem value="write" id="write" />
+                    <Label
+                      htmlFor="write"
+                      className="flex flex-col cursor-pointer flex-grow"
+                    >
+                      <span className="font-medium">Write</span>
+                      <span className="text-sm text-gray-500">
+                        Practice writing the definitions
+                      </span>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2 border p-4 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <RadioGroupItem value="flashcard" id="flashcard" />
+                    <Label
+                      htmlFor="flashcard"
+                      className="flex flex-col cursor-pointer flex-grow"
+                    >
+                      <span className="font-medium">Flashcard</span>
+                      <span className="text-sm text-gray-500">
+                        Study with interactive flashcards
+                      </span>
+                    </Label>
+                  </div>
+                </RadioGroup>
+
+                <div className="flex justify-end mt-4">
+                  <Button
+                    className="px-8"
+                    onClick={() => handleLearnModeSelect(learnMode)}
+                  >
+                    Start
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog
+            open={isCompletedSession && showTestResults}
+            onOpenChange={setIsCompletedSession}
+          >
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>You have finished this set</DialogTitle>
+                <DialogDescription>
+                  Would you like to start over?
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="flex justify-end mt-4">
+                  <Button className="px-8" onClick={handleStartOver}>
+                    Start Over
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Display All Cards Below the Tabs */}
+          {currentMode !== "learn" && currentMode !== "test" && (
+            <div className="mt-8">
+              <h2 className="text-2xl font-semibold mb-4">All Cards</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {cards.map((card) => (
+                  <Card key={card.id} className="p-4">
+                    <h3 className="text-lg font-semibold">{card.term}</h3>
+                    <p className="text-gray-600">{card.definition}</p>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </PageLayout>
     </Protected>
   );
 }

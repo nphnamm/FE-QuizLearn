@@ -44,7 +44,7 @@ export function Header() {
   return (
     <header
       className={cn(
-        "bg-white border-b border-gray-200 fixed top-0 right-0 z-40 transition-all duration-300",
+        "bg-white dark:bg-background border-b border-gray-200 fixed top-0 right-0 z-40 transition-all duration-300",
         isSidebarOpen ? "left-64" : "left-20"
       )}
     >
@@ -97,8 +97,8 @@ export function Header() {
                   className={cn(
                     "text-sm font-medium px-4 py-1.5 rounded-full transition-colors",
                     item.current
-                      ? "bg-[#1a1a1a] text-white"
-                      : "text-gray-600 hover:text-gray-900"
+                      ? "bg-[#1a1a1a] dark:bg-white text-white dark:text-black"
+                      : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                   )}
                 >
                   {item.name}

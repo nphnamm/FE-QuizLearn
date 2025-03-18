@@ -50,10 +50,6 @@ export const persistor = persistStore(store);
 const initializeApp = async () => {
   try {
     await store.dispatch(
-      apiSlice.endpoints.refreshToken.initiate({}, { forceRefetch: true })
-    );
-    
-    await store.dispatch(
       apiSlice.endpoints.loadUser.initiate({}, { forceRefetch: true })
     );
   } catch (error) {

@@ -25,12 +25,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGetSetByFolderIdQuery, useUpdateSetMutation, useDeleteSetMutation } from "../../../../redux/features/sets/setsApi";
-import { 
-  useGetCardBySetIdQuery, 
-  useCreateCardMutation, 
-  useUpdateCardMutation 
+import {
+  useGetCardBySetIdQuery,
+  useCreateCardMutation,
+  useUpdateCardMutation
 } from "../../../../redux/features/cards/cardsApi";
-import { 
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -44,6 +44,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { PageLayout } from "@/components/layout/PageLayout";
 
 const navigationItems = [
   { name: "Dashboard", href: "/dashboard", current: true },
@@ -97,25 +98,25 @@ export default function DashboardPage() {
   const [currentSet, setCurrentSet] = useState<any>(null);
   const [updateTitle, setUpdateTitle] = useState("");
   const [updateDescription, setUpdateDescription] = useState("");
-  
+
   // Cards editor state
   // const [isCardsDialogOpen, setIsCardsDialogOpen] = useState(false);
   const [currentEditingSet, setCurrentEditingSet] = useState<any>(null);
   const [cards, setCards] = useState<Card[]>([]);
-  const [newCard, setNewCard] = useState<{term: string, definition: string}>({ term: "", definition: "" });
-  
-  const {data, isLoading, isError, refetch} = useGetSetByFolderIdQuery(id, {});
+  const [newCard, setNewCard] = useState<{ term: string, definition: string }>({ term: "", definition: "" });
+
+  const { data, isLoading, isError, refetch } = useGetSetByFolderIdQuery(id, {});
   const [updateSet] = useUpdateSetMutation();
   const [deleteSet] = useDeleteSetMutation();
-  
+
   // Cards API hooks
   const { data: cardsData, refetch: refetchCards } = useGetCardBySetIdQuery(
-    currentEditingSet?.id || "", 
+    currentEditingSet?.id || "",
     { skip: !currentEditingSet?.id }
   );
   const [createCard] = useCreateCardMutation();
   const [updateCard] = useUpdateCardMutation();
-  
+
   useEffect(() => {
     const foundItem = mockData.find((item: any) => item.id == id);
     if (foundItem) {
@@ -124,31 +125,31 @@ export default function DashboardPage() {
       setSets([]); // Nếu không tìm thấy, đặt là mảng rỗng để tránh lỗi
     }
   }, [id]);
-  
+
   useEffect(() => {
     if (data?.sets) {
       setSets(data.sets);
-      
+
       // Filter sets into draft and published
       const drafts = data.sets.filter((set: any) => set.isDraft);
       const published = data.sets.filter((set: any) => !set.isDraft);
-      
+
       setDraftSets(drafts);
       setPublishedSets(published);
     }
   }, [data]);
-  
+
   // Effect to load cards when a set is selected for editing
   useEffect(() => {
     if (cardsData?.sets) {
       setCards(cardsData.sets);
     }
   }, [cardsData]);
-  
+
   const handleCreateSet = () => {
     router.push(`/create-set?folderId=${id}`);
   }
-  
+
   const handleOpenUpdateDialog = (set: any, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent navigating to set page
     setCurrentSet(set);
@@ -156,15 +157,15 @@ export default function DashboardPage() {
     setUpdateDescription(set.description || "");
     setIsUpdateDialogOpen(true);
   }
-  
+
   const handleUpdateSet = async () => {
     try {
-      await updateSet({ 
-        id: currentSet.id, 
+      await updateSet({
+        id: currentSet.id,
         title: updateTitle,
         description: updateDescription
       }).unwrap();
-      
+
       setIsUpdateDialogOpen(false);
       toast.success("Set updated successfully");
       refetch(); // Refetch data to update the list
@@ -173,10 +174,10 @@ export default function DashboardPage() {
       toast.error("Failed to update set");
     }
   }
-  
+
   const handleDeleteSet = async (setId: string, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent navigating to set page
-    
+
     if (confirm("Are you sure you want to delete this set?")) {
       try {
         await deleteSet(setId).unwrap();
@@ -188,16 +189,16 @@ export default function DashboardPage() {
       }
     }
   }
-  
+
   const handlePublishDraft = async (set: any, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent navigating to set page
-    
+
     try {
-      await updateSet({ 
+      await updateSet({
         id: set.id,
-        isDraft: false 
+        isDraft: false
       }).unwrap();
-      
+
       toast.success("Set published successfully");
       refetch(); // Refetch data to update the list
     } catch (error) {
@@ -205,7 +206,7 @@ export default function DashboardPage() {
       toast.error("Failed to publish set");
     }
   }
-  
+
   // Card editing functions
   // const handleOpenCardsDialog = (set: any, e: React.MouseEvent) => {
   //   e.stopPropagation(); // Prevent navigating to set page
@@ -216,15 +217,15 @@ export default function DashboardPage() {
     e.stopPropagation(); // Prevent navigating to set page
     router.push(`/set/update-set/${set.id}`);
   }
-  
+
   // Track modified cards
   const [modifiedCards, setModifiedCards] = useState<Set<string>>(new Set());
-  
+
   const handleUpdateCard = async (index: number, field: 'term' | 'definition', value: string) => {
     const updatedCards = [...cards];
     updatedCards[index] = { ...updatedCards[index], [field]: value };
     setCards(updatedCards);
-    
+
     // Add to modified cards set
     setModifiedCards(prev => {
       const newSet = new Set(prev);
@@ -232,7 +233,7 @@ export default function DashboardPage() {
       return newSet;
     });
   }
-  
+
   const handleSaveCard = async (card: Card) => {
     try {
       await updateCard({
@@ -240,16 +241,16 @@ export default function DashboardPage() {
         term: card.term,
         definition: card.definition,
       }).unwrap();
-      
+
       // Remove from modified cards set
       setModifiedCards(prev => {
         const newSet = new Set(prev);
         newSet.delete(card.id);
         return newSet;
       });
-      
+
       toast.success("Card updated successfully");
-      
+
       // Navigate to the set detail page after successful update
       router.push(`/set/${currentEditingSet.id}`);
     } catch (error) {
@@ -257,11 +258,11 @@ export default function DashboardPage() {
       toast.error("Failed to update card");
     }
   }
-  
+
   const handleSaveAllCards = async () => {
     try {
       const promises = [];
-      
+
       // Only update cards that have been modified
       for (const card of cards) {
         if (modifiedCards.has(card.id)) {
@@ -272,16 +273,16 @@ export default function DashboardPage() {
           }).unwrap());
         }
       }
-      
+
       if (promises.length === 0) {
         toast.info("No changes to save");
         return;
       }
-      
+
       await Promise.all(promises);
       setModifiedCards(new Set()); // Clear modified cards
       toast.success(`${promises.length} card(s) updated successfully`);
-      
+
       // Navigate to the set detail page after successful update
       router.push(`/set/${currentEditingSet.id}`);
     } catch (error) {
@@ -289,7 +290,7 @@ export default function DashboardPage() {
       toast.error("Failed to update some cards");
     }
   }
-  
+
   const handleDeleteCard = async (cardId: string, index: number) => {
     if (confirm("Are you sure you want to delete this card?")) {
       try {
@@ -305,33 +306,33 @@ export default function DashboardPage() {
       }
     }
   }
-  
+
   const handleAddCard = async () => {
     if (!newCard.term || !newCard.definition) {
       toast.error("Both term and definition are required");
       return;
     }
-    
+
     try {
       const response = await createCard({
         setId: currentEditingSet.id,
         term: newCard.term,
         definition: newCard.definition,
       }).unwrap();
-      
+
       // Add the new card to the list
       setCards([...cards, response.card]);
-      
+
       // Clear the form
       setNewCard({ term: "", definition: "" });
-      
+
       toast.success("Card added successfully");
-      
+
       // Ask user if they want to continue adding cards or view the set
       const continueAdding = window.confirm(
         "Card added successfully! Would you like to continue adding more cards?\n\nClick 'OK' to add more cards or 'Cancel' to view the set."
       );
-      
+
       if (!continueAdding) {
         // Navigate to the set detail page
         router.push(`/set/${currentEditingSet.id}`);
@@ -341,285 +342,183 @@ export default function DashboardPage() {
       toast.error("Failed to add card");
     }
   }
-  
+
   return (
     <Protected>
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header
-          className={cn(
-            "bg-white border-b border-gray-200 fixed top-0 right-0 z-40 transition-all duration-300",
-            isSidebarOpen ? "left-64" : "left-20"
-          )}
-        >
-          <div className="px-6">
-            <div className="flex h-16 items-center justify-between">
-              {/* Left side with logo and navigation */}
-              <div className="flex items-center gap-8">
-                <button
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                  className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    {isSidebarOpen ? (
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 6h16M4 12h16M4 18h16"
-                      />
-                    ) : (
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 6h16M4 12h16M4 18h16"
-                      />
-                    )}
-                  </svg>
-                </button>
-                <Link href="/dashboard" className="flex items-center gap-2">
-                  <Image
-                    src="/fusion-logo.svg"
-                    alt="Fusion"
-                    width={24}
-                    height={24}
-                    className="w-6 h-6"
-                  />
-                  <span className="text-lg font-semibold">Fusion</span>
-                </Link>
-                <nav className="flex items-center gap-6">
-                  {navigationItems.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className={cn(
-                        "text-sm font-medium px-4 py-1.5 rounded-full transition-colors",
-                        item.current
-                          ? "bg-[#1a1a1a] text-white"
-                          : "text-gray-600 hover:text-gray-900"
-                      )}
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                </nav>
-              </div>
-
-              {/* Right side icons and profile */}
+      <PageLayout>
+        <div className="dark:bg-[#1a1a1a] bg-background text-white min-h-screen">
+          <div className="max-w-[1400px] mx-auto p-8 space-y-8">
+            {/* Dashboard Header */}
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full">
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
-                </button>
-                <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full">
-                  <Settings className="w-5 h-5" />
-                </button>
-                <div className="w-8 h-8 rounded-full overflow-hidden">
-                  <Image
-                    src="/avatar-placeholder.svg"
-                    alt="User"
-                    width={32}
-                    height={32}
-                    className="w-full h-full"
-                  />
+                <h1 className="text-2xl font-semibold text-gray-600">
+                  Folders
+                </h1>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="bg-[#2a2a2a] rounded-lg px-4 py-2 text-sm text-gray-300">
+                  30 days Oct 16/21 - Nov 14/21
                 </div>
               </div>
             </div>
-          </div>
-        </header>
 
-        {/* Sidebar */}
-        <Sidebar
-          isOpen={isSidebarOpen}
-          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        />
+            {/* Top Row */}
+            <div className="p-4 space-y-4">
+              <div className="flex justify-between items-center">
+                <Button variant="outline" className="flex items-center gap-2" onClick={handleCreateSet}>
+                  <span className="text-gray-600">+ Create new</span>
+                </Button>
 
-        {/* Main Content */}
-        <div
-          className={cn(
-            "transition-all duration-300 pt-16",
-            isSidebarOpen ? "pl-64" : "pl-20"
-          )}
-        >
-          <div className="dark:bg-[#1a1a1a] bg-background text-white min-h-screen">
-            <div className="max-w-[1400px] mx-auto p-8 space-y-8">
-              {/* Dashboard Header */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <h1 className="text-2xl font-semibold text-gray-600">
-                    Folders
-                  </h1>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="bg-[#2a2a2a] rounded-lg px-4 py-2 text-sm text-gray-300">
-                    30 days Oct 16/21 - Nov 14/21
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="icon">
+                    <span className="sr-only">Select multiple</span>
+                    <Folder className="h-4 w-4 text-gray-600" />
+                  </Button>
+
+                  <div className="flex items-center">
+                    <span className="mr-2 text-gray-600">Last Updated</span>
+                    <Button variant="ghost" size="icon">
+                      ↓
+                    </Button>
                   </div>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="text-gray-600">
+                        See saved or trash
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem>Saved</DropdownMenuItem>
+                      <DropdownMenuItem>Trash</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  <Button variant="outline" size="icon">
+                    <Filter className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
 
-              {/* Top Row */}
-              <div className="p-4 space-y-4">
-                <div className="flex justify-between items-center">
-                  <Button variant="outline" className="flex items-center gap-2" onClick={handleCreateSet}>
-                    <span className="text-gray-600">+ Create new</span>
-                  </Button>
+              <Tabs defaultValue="published" className="w-full" onValueChange={setActiveTab}>
+                <TabsList className="mb-4">
+                  <TabsTrigger value="published">Published Sets ({publishedSets.length})</TabsTrigger>
+                  <TabsTrigger value="drafts">Draft Sets ({draftSets.length})</TabsTrigger>
+                </TabsList>
 
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="icon">
-                      <span className="sr-only">Select multiple</span>
-                      <Folder className="h-4 w-4 text-gray-600" />
-                    </Button>
-
-                    <div className="flex items-center">
-                      <span className="mr-2 text-gray-600">Last Updated</span>
-                      <Button variant="ghost" size="icon">
-                        ↓
-                      </Button>
+                <TabsContent value="published" className="space-y-2">
+                  {publishedSets.length === 0 ? (
+                    <div className="text-center py-8 text-gray-600">
+                      No published sets found. Create a new set or publish a draft.
                     </div>
-
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="text-gray-600">
-                          See saved or trash
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem>Saved</DropdownMenuItem>
-                        <DropdownMenuItem>Trash</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    <Button variant="outline" size="icon">
-                      <Filter className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                <Tabs defaultValue="published" className="w-full" onValueChange={setActiveTab}>
-                  <TabsList className="mb-4">
-                    <TabsTrigger value="published">Published Sets ({publishedSets.length})</TabsTrigger>
-                    <TabsTrigger value="drafts">Draft Sets ({draftSets.length})</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="published" className="space-y-2">
-                    {publishedSets.length === 0 ? (
-                      <div className="text-center py-8 text-gray-600">
-                        No published sets found. Create a new set or publish a draft.
-                      </div>
-                    ) : (
-                      publishedSets.map((set: any, index: number) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-center p-2 hover:bg-gray-100 rounded-md bg-teal-600 hover:bg-teal-500 transition-colors cursor-pointer"
-                          onClick={() => router.push(`/set/${set.id}`)}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="text-white">{set.title}</span>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              onClick={(e) => handleEditCardsOfSet(set, e)}
-                              title="Edit Cards"
-                            >
-                              <PencilLine className="h-4 w-4 text-white" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              onClick={(e) => handleOpenUpdateDialog(set, e)}
-                              title="Edit Set"
-                            >
-                              <Edit className="h-4 w-4 text-white" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              onClick={(e) => handleDeleteSet(set.id, e)}
-                              title="Delete Set"
-                            >
-                              <Trash className="h-4 w-4 text-white" />
-                            </Button>
-                          </div>
+                  ) : (
+                    publishedSets.map((set: any, index: number) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center p-2 hover:bg-gray-100 rounded-md bg-teal-600 hover:bg-teal-500 transition-colors cursor-pointer"
+                        onClick={() => router.push(`/set/${set.id}`)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-white">{set.title}</span>
                         </div>
-                      ))
-                    )}
-                  </TabsContent>
-                  
-                  <TabsContent value="drafts" className="space-y-2">
-                    {draftSets.length === 0 ? (
-                      <div className="text-center py-8 text-gray-600">
-                        No draft sets found. Create a new set to start working on a draft.
-                      </div>
-                    ) : (
-                      draftSets.map((set: any, index: number) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-center p-2 hover:bg-gray-100 rounded-md bg-amber-600 hover:bg-amber-500 transition-colors cursor-pointer"
-                          onClick={() => router.push(`/set/${set.id}`)}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="text-white">{set.title}</span>
-                            <span className="text-xs bg-gray-800/30 rounded px-2 py-0.5">DRAFT</span>
-                          </div>
 
-                          <div className="flex items-center gap-2">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={(e) => handlePublishDraft(set, e)}
-                              className="text-white text-xs border border-white/50 px-2"
-                            >
-                              Publish
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              onClick={(e) => handleEditCardsOfSet(set, e)}
-                              title="Edit Cards"
-                            >
-                              <PencilLine className="h-4 w-4 text-white" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              onClick={(e) => handleOpenUpdateDialog(set, e)}
-                              title="Edit Set"
-                            >
-                              <Edit className="h-4 w-4 text-white" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              onClick={(e) => handleDeleteSet(set.id, e)}
-                              title="Delete Set"
-                            >
-                              <Trash className="h-4 w-4 text-white" />
-                            </Button>
-                          </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => handleEditCardsOfSet(set, e)}
+                            title="Edit Cards"
+                          >
+                            <PencilLine className="h-4 w-4 text-white" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => handleOpenUpdateDialog(set, e)}
+                            title="Edit Set"
+                          >
+                            <Edit className="h-4 w-4 text-white" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => handleDeleteSet(set.id, e)}
+                            title="Delete Set"
+                          >
+                            <Trash className="h-4 w-4 text-white" />
+                          </Button>
                         </div>
-                      ))
-                    )}
-                  </TabsContent>
-                </Tabs>
+                      </div>
+                    ))
+                  )}
+                </TabsContent>
 
-                <div className="fixed bottom-4 right-4">
-                  <Button variant="destructive">Remove ads</Button>
-                </div>
+                <TabsContent value="drafts" className="space-y-2">
+                  {draftSets.length === 0 ? (
+                    <div className="text-center py-8 text-gray-600">
+                      No draft sets found. Create a new set to start working on a draft.
+                    </div>
+                  ) : (
+                    draftSets.map((set: any, index: number) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center p-2 hover:bg-gray-100 rounded-md bg-amber-600 hover:bg-amber-500 transition-colors cursor-pointer"
+                        onClick={() => router.push(`/set/${set.id}`)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-white">{set.title}</span>
+                          <span className="text-xs bg-gray-800/30 rounded px-2 py-0.5">DRAFT</span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => handlePublishDraft(set, e)}
+                            className="text-white text-xs border border-white/50 px-2"
+                          >
+                            Publish
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => handleEditCardsOfSet(set, e)}
+                            title="Edit Cards"
+                          >
+                            <PencilLine className="h-4 w-4 text-white" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => handleOpenUpdateDialog(set, e)}
+                            title="Edit Set"
+                          >
+                            <Edit className="h-4 w-4 text-white" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => handleDeleteSet(set.id, e)}
+                            title="Delete Set"
+                          >
+                            <Trash className="h-4 w-4 text-white" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </TabsContent>
+              </Tabs>
+
+              <div className="fixed bottom-4 right-4">
+                <Button variant="destructive">Remove ads</Button>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      
+
+      </PageLayout>
+
       {/* Update Dialog */}
       <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
@@ -663,9 +562,9 @@ export default function DashboardPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
-      
-   
+
+
+
     </Protected>
   );
 }

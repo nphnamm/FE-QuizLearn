@@ -79,7 +79,7 @@ export default function DashboardPage() {
   return (
     <Protected>
       <PageLayout>
-        <div className="bg-gray-50 min-h-screen py-8">
+        <div className="dark:bg-background bg-gray-50 min-h-screen py-8">
           <div className="max-w-[1200px] mx-auto px-6">
             {/* Widgets Section */}
             <div className="mb-8">
