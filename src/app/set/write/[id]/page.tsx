@@ -87,6 +87,7 @@ export default function WriteModePage() {
       const response = await createOrUpdateUserSession({
         userId: user.id,
         setId: id,
+        sessionType: "write",
       });
       
       setUserSessionId(response.data?.sessionId);

@@ -85,6 +85,7 @@ const page = (props: Props) => {
     const res = await createOrUpdateUserSession({
       setId: id as string,
       userId: user?.id,
+      sessionType: "multiple-choice",
     });
     setAnsweredCards([]);
     setCardResult([]);
