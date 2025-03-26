@@ -49,9 +49,9 @@ export const persistor = persistStore(store);
 
 const initializeApp = async () => {
   try {
-    await store.dispatch(
-      apiSlice.endpoints.loadUser.initiate({}, { forceRefetch: true })
-    );
+    // await store.dispatch(
+    //   apiSlice.endpoints.loadUser.initiate({}, { forceRefetch: true })
+    // );
   } catch (error) {
     console.error("Failed to initialize authentication:", error);
   }

@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { userLoggedIn } from "../auth/authSlice";
+import { userLoggedIn, userLoggedOut } from "../auth/authSlice";
 
 // Define tag types for the entire API
 const tagTypes = ['Card', 'Set', 'FolderSets', 'AllSets', 'UserSets'] as const;
@@ -25,8 +25,6 @@ export const apiSlice = createApi({
       async onQueryStarted(arg, { queryFulfilled, dispatch }) {
         try {
           const result = await queryFulfilled;
-          // console.log("Full API response:", result);
-          // console.log("API response data:", result.data);
           dispatch(
             userLoggedIn({
               accessToken: result?.data.accessToken,
@@ -34,7 +32,32 @@ export const apiSlice = createApi({
             })
           );
         } catch (error: any) {
-          console.log(error);
+          // If the error is 400, try to refresh the token
+          if (error?.response?.status === 400) {
+            try {
+              const refreshResult = await dispatch(
+                apiSlice.endpoints.refreshToken.initiate({}, { forceRefetch: true })
+              );
+              
+              if ('data' in refreshResult) {
+                // Update the store with the new token
+                dispatch(
+                  userLoggedIn({
+                    accessToken: refreshResult.data.accessToken,
+                    user: refreshResult.data.user,
+                  })
+                );
+                // The original query will automatically retry with the new token
+                // No need to explicitly call loadUser again
+              }
+            } catch (refreshError) {
+              console.error('Failed to refresh token:', refreshError);
+              // If refresh fails, log the user out
+              dispatch(userLoggedOut());
+            }
+          } else {
+            console.error('Error loading user:', error);
+          }
         }
       },
     }),

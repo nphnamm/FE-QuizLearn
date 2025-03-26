@@ -85,7 +85,7 @@ const page = (props: Props) => {
     const res = await createOrUpdateUserSession({
       setId: id as string,
       userId: user?.id,
-      sessionType: "multiple-choice",
+      sessionType: "multi-choice",
     });
     setAnsweredCards([]);
     setCardResult([]);
@@ -178,6 +178,8 @@ const page = (props: Props) => {
     const response = await createOrUpdateUserSession({
       setId: id as string,
       userId: user?.id,
+      sessionType: "multi-choice",
+
     });
     // console.log("response", response);
     setSessionId(response?.data?.sessionId);
@@ -203,6 +205,7 @@ const page = (props: Props) => {
     const res = await createOrUpdateUserSession({
       setId: id as string,
       userId: user?.id,
+      sessionType: "multi-choice",
     });
     setShowTestResults(false);
     setTotalCorrect(0);
@@ -230,6 +233,7 @@ const page = (props: Props) => {
       const res = await createOrUpdateUserSession({
         setId: id as string,
         userId: user?.id,
+        sessionType: "multi-choice",
       });
       // console.log("res", res);
       if (res?.data?.isCompleted) {

@@ -17,10 +17,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useLoginMutation } from "../../../../redux/features/auth/authApi";
+import { useLoadUserQuery } from "../../../../redux/features/api/apiSlice";
+import { useSelector } from "react-redux";
 
 export default function LoginPage() {
   const router = useRouter();
   const [login, { isError, data, isSuccess, error }] = useLoginMutation();
+  const { user } = useSelector((state: any) => state.auth);
 
   // Wrap searchParams related code in a client component
   function SearchParamsHandler() {
@@ -54,6 +57,9 @@ export default function LoginPage() {
   useEffect(() => {
     if (isSuccess) {
       toast.success(data?.message || "Login successfully!");
+      router.push("/dashboard");
+    }
+    if(!!user && user !== ""){
       router.push("/dashboard");
     }
   }, [isSuccess, isError]);

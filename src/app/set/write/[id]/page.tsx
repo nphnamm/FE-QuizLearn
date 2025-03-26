@@ -21,12 +21,12 @@ import {
   useUpdateProgressMutation,
 } from "../../../../../redux/features/userProgresses/userProgressesApi";
 import Image from "next/image";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogTitle, 
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
   DialogHeader,
-  DialogDescription 
+  DialogDescription
 } from "@/components/ui/dialog";
 
 interface Card {
@@ -63,7 +63,7 @@ export default function WriteModePage() {
   const [showContent, setShowContent] = useState(true);
   const [userSessionId, setUserSessionId] = useState<string | null>(null);
   const [isCompletedSession, setIsCompletedSession] = useState(false);
-  
+
   const [createOrUpdateUserSession] = useCreateOrUpdateUserSessionMutation();
   const [updateProgress] = useUpdateProgressMutation();
   const [restart] = useRestartSessionMutation();
@@ -89,9 +89,9 @@ export default function WriteModePage() {
         setId: id,
         sessionType: "write",
       });
-      
+
       setUserSessionId(response.data?.sessionId);
-      
+
       // If there are remaining cards, use them
       const remainingCards = response.data?.remainingCards || [];
       if (remainingCards.length > 0) {
@@ -99,7 +99,7 @@ export default function WriteModePage() {
       } else if (data?.sets && data.sets.length > 0) {
         setCards(data.sets);
       }
-      
+
       return response;
     } catch (error) {
       console.error("Failed to create user session:", error);
@@ -126,33 +126,33 @@ export default function WriteModePage() {
     if (!userAnswer.trim()) return;
 
     setAnswerSubmitted(true);
-    
+
     // Improved answer validation
     const currentTerm = cards[currentCardIndex].term.toLowerCase().trim();
     const userTerm = userAnswer.toLowerCase().trim();
-    
+
     // Check if answer is correct using more sophisticated matching
-    const correct = 
-      userTerm === currentTerm || 
-      currentTerm.includes(userTerm) || 
+    const correct =
+      userTerm === currentTerm ||
+      currentTerm.includes(userTerm) ||
       userTerm.includes(currentTerm) ||
-      (userTerm.length > 3 && 
-       currentTerm.split(" ").some(word => 
-         word.length > 3 && userTerm.includes(word.toLowerCase())));
-    
+      (userTerm.length > 3 &&
+        currentTerm.split(" ").some(word =>
+          word.length > 3 && userTerm.includes(word.toLowerCase())));
+
     setIsCorrect(correct);
     setShowFeedback(true);
-    
+
     if (correct) {
       setCorrectAnswers(prev => prev + 1);
     }
-    
+
     // Update progress
     await updateUserProgress(correct);
     setProgress(((currentCardIndex + 1) / cards.length) * 100);
   };
 
-  const handleNextCard = () => {
+  const handleNextCard = async () => {
     if (currentCardIndex < cards.length - 1) {
       // Add transition effect when changing cards
       setShowContent(false);
@@ -165,11 +165,30 @@ export default function WriteModePage() {
       }, 300);
     } else {
       // End of the set
-      setIsCompletedSession(true);
+      const res = await createOrUpdateUserSession({
+        userId: user.id,
+        setId: id,
+        sessionType: "write",
+      });
+
+      console.log('res', res);
+      if (res.data.remainingCards.length > 0) {
+        setIsCompletedSession(false);
+        setCurrentCardIndex(0);
+        setUserAnswer("");
+        setAnswerSubmitted(false);
+        setShowFeedback(false);
+        setCorrectAnswers(0);
+        setProgress(0);
+        setCards(res.data.remainingCards);
+      } else {
+        setIsCompletedSession(true);
+      }
+
     }
   };
 
-  const handleStartOver = () => {
+  const handleStartOver = async () => {
     setIsCompletedSession(false);
     setCurrentCardIndex(0);
     setUserAnswer("");
@@ -180,7 +199,14 @@ export default function WriteModePage() {
 
     if (userSessionId) {
       restart({ sessionId: userSessionId });
+
     }
+    const res = await createOrUpdateUserSession({
+      userId: user.id,
+      setId: id,
+      sessionType: "write",
+    });
+    setCards(res.data.remainingCards);
   };
 
   const handleBackToDashboard = () => {
@@ -194,7 +220,6 @@ export default function WriteModePage() {
       </div>
     );
   }
-  console.log('c',cards[currentCardIndex]);
 
   return (
     <Protected>
@@ -273,7 +298,7 @@ export default function WriteModePage() {
                       <h2 className="text-2xl font-bold mb-4">
                         {cards[currentCardIndex]?.definition}
                       </h2>
-                      
+
                       {/* Card image */}
                       {cards[currentCardIndex]?.imageUrl && (
                         <div className="relative w-full max-w-md mx-auto h-48 bg-gray-100 rounded-lg overflow-hidden mb-6">
@@ -391,8 +416,8 @@ export default function WriteModePage() {
                   {correctAnswers === cards.length
                     ? "Perfect score! Great job! 🎉"
                     : correctAnswers > cards.length / 2
-                    ? "Well done! Keep practicing to improve. 👍"
-                    : "Keep studying to improve your score. 📚"}
+                      ? "Well done! Keep practicing to improve. 👍"
+                      : "Keep studying to improve your score. 📚"}
                 </p>
                 <div className="flex justify-center gap-4">
                   <Button variant="outline" onClick={handleBackToDashboard}>

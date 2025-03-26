@@ -28,6 +28,7 @@ import {
   useUpdateProgressMutation,
 } from "../../../../redux/features/userProgresses/userProgressesApi";
 import { PageLayout } from "@/components/layout/PageLayout";
+import Image from "next/image";
 
 type StudyMode = "flashcards" | "learn" | "test";
 type LearnMode = "multiple-choice" | "write" | "flashcard";
@@ -41,6 +42,7 @@ interface Card {
   statusId?: number;
   createdAt?: string;
   updatedAt?: string;
+  imageUrl?: string;
 }
 
 interface Question {
@@ -424,59 +426,83 @@ export default function StudySetPage() {
         <div
           className={cn(
             "transition-all bg-background duration-300 pt-24 px-8",
-          
           )}
         >
-          <Tabs
-            defaultValue="flashcards"
-            className="w-full"
-            onValueChange={(value: any) => handleModeChange(value)}
-          >
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="flashcards">Flashcards</TabsTrigger>
-              <TabsTrigger value="learn">Learn</TabsTrigger>
-              <TabsTrigger value="test">Test</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="flashcards" className="mt-6">
-              <div className="flex flex-col items-center">
-                <div className="w-full max-w-2xl aspect-[3/2] relative">
-                  <Card
-                    className={cn(
-                      "w-full h-full cursor-pointer flex items-center justify-center p-8 text-2xl text-center",
-                      "transition-all duration-300",
-                      showContent
-                        ? "opacity-100 scale-100"
-                        : "opacity-0 scale-95"
-                    )}
-                    onClick={handleFlipCard}
-                  >
-                    <CardContent className="flex items-center justify-center h-full">
-                      {isFlipped ? (
-                        <span>
-                          {cards[currentCardIndex]?.definition ||
-                            "No definition available"}
-                        </span>
-                      ) : (
-                        <span>
-                          {cards[currentCardIndex]?.term ||
-                            "No term available"}
-                        </span>
+          <div className="flex flex-col items-center">
+            <div className="w-full max-w-2xl aspect-[3/2] relative">
+              <Card
+                className={cn(
+                  "w-full h-full cursor-pointer flex items-center justify-center p-8 text-2xl text-center",
+                  "transition-all duration-300 perspective-1000",
+                  showContent
+                    ? "opacity-100 scale-100"
+                    : "opacity-0 scale-95"
+                )}
+                onClick={handleFlipCard}
+              >
+                <CardContent className={cn(
+                  "flex items-center justify-center w-full h-full relative transition-transform duration-500 transform-style-3d",
+                  isFlipped ? "rotate-y-180" : ""
+                )}>
+                  <div className="absolute backface-hidden w-full h-full flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-4 w-full">
+                      <span>
+                        {cards[currentCardIndex]?.term ||
+                          "No term available"}
+                      </span>
+                      {cards[currentCardIndex]?.imageUrl && (
+                        <div className="relative w-full max-w-md h-48 bg-gray-100 rounded-lg overflow-hidden">
+                          <Image
+                            src={cards[currentCardIndex].imageUrl}
+                            alt={cards[currentCardIndex].term}
+                            fill
+                            className="object-contain"
+                            priority
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const fallbackEl = document.createElement('div');
+                              fallbackEl.className = 'flex items-center justify-center h-full text-gray-400';
+                              fallbackEl.innerText = 'Image could not be loaded';
+                              target.parentElement?.appendChild(fallbackEl);
+                            }}
+                          />
+                        </div>
                       )}
-                    </CardContent>
-                  </Card>
-                </div>
-                <div className="flex gap-4 mt-6">
-                  <Button onClick={handlePrevCard}>Previous</Button>
-                  <Button onClick={handleNextCard}>Next</Button>
-                </div>
-                <div className="mt-4 text-sm text-gray-500">
-                  Card {currentCardIndex + 1} of {cards.length + answeredCards.length}
-                </div>
-              </div>
-            </TabsContent>
-
-          </Tabs>
+                    </div>
+                  </div>
+                  <div className="absolute backface-hidden w-full h-full flex items-center justify-center rotate-y-180">
+                    <span>
+                      {cards[currentCardIndex]?.definition ||
+                        "No definition available"}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            <div className="flex gap-4 mt-6">
+              <Button onClick={handlePrevCard}>Previous</Button>
+              <Button onClick={handleNextCard}>Next</Button>
+            </div>
+            <div className="mt-4 text-sm text-gray-500">
+              Card {currentCardIndex + 1} of {cards.length + answeredCards.length}
+            </div>
+            <div className="flex gap-6 mt-12">
+              <Button 
+                onClick={() => handleModeChange("learn")}
+                className="px-8 py-8 text-xl font-bold bg-white border border-primary text-primary shadow-xl hover:shadow-2xl hover:bg-primary hover:text-white transition-all duration-200 rounded-xl"
+              >
+                Learn Mode
+              </Button>
+              <Button 
+                onClick={() => handleModeChange("test")}
+                className="px-8 py-8 text-xl font-bold bg-white border border-primary text-primary shadow-xl hover:shadow-2xl hover:bg-primary hover:text-white transition-all duration-200 rounded-xl"
+              >
+                Test Mode
+              </Button>
+            </div>
+          </div>
 
           {/* Modal for selecting Learn mode */}
           <Dialog open={showModeSelector} onOpenChange={setShowModeSelector}>
@@ -575,8 +601,29 @@ export default function StudySetPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {cards.map((card) => (
                   <Card key={card.id} className="p-4">
-                    <h3 className="text-lg font-semibold">{card.term}</h3>
-                    <p className="text-gray-600">{card.definition}</p>
+                    <div className="flex flex-col gap-4">
+                      <h3 className="text-lg font-semibold">{card.term}</h3>
+                      {card.imageUrl && (
+                        <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
+                          <Image
+                            src={card.imageUrl}
+                            alt={card.term}
+                            fill
+                            className="object-contain"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const fallbackEl = document.createElement('div');
+                              fallbackEl.className = 'flex items-center justify-center h-full text-gray-400';
+                              fallbackEl.innerText = 'Image could not be loaded';
+                              target.parentElement?.appendChild(fallbackEl);
+                            }}
+                          />
+                        </div>
+                      )}
+                      <p className="text-gray-600">{card.definition}</p>
+                    </div>
                   </Card>
                 ))}
               </div>
