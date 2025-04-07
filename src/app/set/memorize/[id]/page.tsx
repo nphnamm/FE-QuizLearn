@@ -68,9 +68,7 @@ export default function MemorizePage() {
     const currentCard = cards[currentCardIndex];
     if (!currentCard) return;
 
-    if (isMemorized) {
-      setMemorizedCards(prev => new Set([...prev, currentCard.id]));
-    }
+    
 
     // Update progress in the backend
     if (sessionId) {
