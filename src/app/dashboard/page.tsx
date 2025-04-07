@@ -80,7 +80,7 @@ export default function DashboardPage() {
     <Protected>
       <PageLayout>
         <div className="dark:bg-background bg-gray-50 min-h-screen py-8">
-          <div className="max-w-[1200px] mx-auto px-6">
+          <div className=" mx-auto px-6">
             {/* Widgets Section */}
             <div className="mb-8">
               <div className="flex justify-between items-center mb-4">

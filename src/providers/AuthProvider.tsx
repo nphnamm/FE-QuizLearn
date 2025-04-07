@@ -10,7 +10,6 @@ interface AuthProviderProps {
 const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const dispatch = useDispatch();
   const { token } = useSelector((state: any) => state.auth);
-  const { data, isLoading } = useLoadUserQuery(undefined);
 
   useEffect(() => {
     // If user is authenticated, start the token refresh timer

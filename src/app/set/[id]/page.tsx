@@ -319,7 +319,7 @@ export default function StudySetPage() {
       router.push(`/set/write/${id}`);
     } else if (mode === "flashcard") {
       // Stay on current page but switch to flashcard mode
-      setCurrentMode("flashcards");
+      router.push(`/set/flashcard/${id}`);
     }
   };
 
@@ -456,7 +456,7 @@ export default function StudySetPage() {
                             src={cards[currentCardIndex].imageUrl}
                             alt={cards[currentCardIndex].term}
                             fill
-                            className="object-contain"
+                            className="object-cover"
                             priority
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             onError={(e) => {
@@ -609,7 +609,7 @@ export default function StudySetPage() {
                             src={card.imageUrl}
                             alt={card.term}
                             fill
-                            className="object-contain"
+                            className="object-cover"
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
