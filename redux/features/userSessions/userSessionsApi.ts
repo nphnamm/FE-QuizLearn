@@ -17,10 +17,18 @@ export const userSessionsApi = apiSlice.injectEndpoints({
                 credentials: "include" as const,
             }),
         }),
+        createOrResumeTest: builder.query({
+            query: (data) => ({
+                url: `session/start-test/${data}`,
+                method: "GET",
+                credentials: "include" as const,
+            }),
+        }),
     }),
 });
 
 export const {
     useCreateOrUpdateUserSessionMutation,
     useGetRandomAnswerChoicesQuery, 
+    useCreateOrResumeTestQuery
 } = userSessionsApi;

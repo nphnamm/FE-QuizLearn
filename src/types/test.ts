@@ -31,8 +31,29 @@ export type TestModeData = {
   success: boolean;
   testMode: boolean;
   questions: Question[];
+  sessionId:string;
 };
 
 export type UserAnswers = {
   [questionId: string]: string | boolean;
 }; 
+
+// types/test.ts
+
+export type QuestionType = "write" | "multi-choice" | "yes-no" | "fill-in" | "drag-and-drop" | "true-false" | "matching" | "flashcard";
+
+
+export interface DetailedResult {
+  questionId: string;
+  correct: boolean;
+  userAnswer: string | boolean;
+  correctAnswer?: string | boolean;
+}
+
+export interface TestResult {
+  score: number;
+  correctCount: number;
+  incorrectCount: number;
+  totalQuestions: number;
+  detailedResults: DetailedResult[];
+}
