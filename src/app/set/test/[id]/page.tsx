@@ -37,12 +37,12 @@ export default function TestModePage() {
   const [startTime, setStartTime] = useState<Date>(new Date());
   const [endTime, setEndTime] = useState<Date | null>(null);
   const [data, setData] = useState<TestModeData>();
-  const { data: testData, isLoading: isLoadingTestData } =
-    useCreateOrResumeTestQuery(setId);
+  const { data: testData, isLoading: isLoadingTestData } = useCreateOrResumeTestQuery(setId,{});
 
   useEffect(() => {
+    
     setData(testData);
-  }, [setId]);
+  }, []);
 
   useEffect(() => {
     if (!data) return;
