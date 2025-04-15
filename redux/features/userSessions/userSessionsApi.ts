@@ -24,11 +24,21 @@ export const userSessionsApi = apiSlice.injectEndpoints({
                 credentials: "include" as const,
             }),
         }),
+        finishTest: builder.mutation({
+            query: (data) => ({
+                url: `session/finish-test`,
+                method: "POST",
+                body:data,
+                credentials: "include" as const,
+            }),
+        }),
+
     }),
 });
 
 export const {
     useCreateOrUpdateUserSessionMutation,
     useGetRandomAnswerChoicesQuery, 
-    useCreateOrResumeTestQuery
+    useCreateOrResumeTestQuery,
+    useFinishTestMutation
 } = userSessionsApi;

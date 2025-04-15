@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Question, TestModeData, UserAnswers } from "@/types/test";
 import { CheckCircle, XCircle, ArrowLeft, RefreshCw } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useCreateOrResumeTestQuery } from "../../../../../redux/features/userSessions/userSessionsApi";
+import { useCreateOrResumeTestQuery, useFinishTestMutation } from "../../../../../redux/features/userSessions/userSessionsApi";
 import TestResults from "@/components/test/result";
 
 export default function TestModePage() {
@@ -38,11 +38,15 @@ export default function TestModePage() {
   const [endTime, setEndTime] = useState<Date | null>(null);
   const [data, setData] = useState<TestModeData>();
   const { data: testData, isLoading: isLoadingTestData } = useCreateOrResumeTestQuery(setId,{});
-
+  const [sessionId,setSessionId] = useState("") 
   useEffect(() => {
-    
+    if(testData?.sessionId){
+      setSessionId(testData?.sessionId)
+    }
     setData(testData);
   }, []);
+  const [finishTest, { isLoading: isUpdatingCard }] = useFinishTestMutation();
+
 
   useEffect(() => {
     if (!data) return;
@@ -120,6 +124,7 @@ export default function TestModePage() {
     const score = (correctCount / data.questions.length) * 100;
 
     return {
+      sessionId,
       score,
       correctCount,
       incorrectCount,
@@ -128,7 +133,7 @@ export default function TestModePage() {
     };
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async() => {
     setEndTime(new Date());
     const results = calculateResults(userAnswers);
     setTestResults(results);
@@ -137,11 +142,12 @@ export default function TestModePage() {
     // Here you would typically send the results to your backend
     console.log("Submitted answers:", userAnswers);
     console.log("Test results:", results);
-
+    const res = await finishTest(results)
+    if(res){
+      console.log('success');
+    }
     // Calculate time spent in seconds
-    const timeSpent = Math.floor(
-      (new Date().getTime() - startTime.getTime()) / 1000
-    );
+
   };
 
   const handleRetry = () => {
