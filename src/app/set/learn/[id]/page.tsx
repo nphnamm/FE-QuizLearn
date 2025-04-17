@@ -72,20 +72,19 @@ const page = (props: Props) => {
   const [updateProgress, { isLoading: isUpdatingProgress }] =
     useUpdateProgressMutation();
   const handleStartOver = async () => {
-    const response = await restart({
-      sessionId: sessionId,
-    });
-    // const response = await createOrUpdateUserSession({
-    //     setId: id as string,
-    //     userId: user?.id
-    // })
-    console.log("response", response);
+    // const response = await restart({
+    //   sessionId: sessionId,
+    // });
+
+    // console.log("response", response);
 
     // Recreate session
     const res = await createOrUpdateUserSession({
       setId: id as string,
       userId: user?.id,
       sessionType: "multi-choice",
+      completed:false
+
     });
     setAnsweredCards([]);
     setCardResult([]);
@@ -179,6 +178,7 @@ const page = (props: Props) => {
       setId: id as string,
       userId: user?.id,
       sessionType: "multi-choice",
+      completed:false
 
     });
     // console.log("response", response);
@@ -206,6 +206,8 @@ const page = (props: Props) => {
       setId: id as string,
       userId: user?.id,
       sessionType: "multi-choice",
+      completed:false
+
     });
     setShowTestResults(false);
     setTotalCorrect(0);
@@ -234,6 +236,8 @@ const page = (props: Props) => {
         setId: id as string,
         userId: user?.id,
         sessionType: "multi-choice",
+        completed:false
+
       });
       // console.log("res", res);
       if (res?.data?.isCompleted) {

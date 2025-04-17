@@ -30,14 +30,10 @@ interface Folder {
   id: string;
   name: string;
   icon: JSX.Element;
-  sets?: Set[];
+  totalSets:number;
 }
 
-interface Set {
-  id: string;
-  name: string;
-  terms: number;
-}
+
 
 const navigationItems = [
   { name: "Dashboard", href: "/dashboard", current: true },
@@ -61,7 +57,7 @@ export default function FolderPage() {
       id: (folders.length + 1).toString(),
       name,
       icon: <div className="w-3 h-3 rounded-full bg-blue-500" />,
-      sets: [],
+      totalSets:0
     };
     setFolders([...folders, newFolder]);
   };
@@ -154,7 +150,7 @@ export default function FolderPage() {
                           <div>
                             <h3 className="font-medium text-card-foreground">{folder.name}</h3>
                             <p className="text-sm text-muted-foreground">
-                              {folder.sets?.length || 0} sets
+                              {folder?.totalSets || 0} sets
                             </p>
                           </div>
                         </div>

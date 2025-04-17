@@ -88,6 +88,8 @@ export default function WriteModePage() {
         userId: user.id,
         setId: id,
         sessionType: "write",
+        completed: false
+
       });
 
       setUserSessionId(response.data?.sessionId);
@@ -169,6 +171,8 @@ export default function WriteModePage() {
         userId: user.id,
         setId: id,
         sessionType: "write",
+        completed: false
+
       });
 
       console.log('res', res);
@@ -205,6 +209,8 @@ export default function WriteModePage() {
       userId: user.id,
       setId: id,
       sessionType: "write",
+      completed: false
+
     });
     setCards(res.data.remainingCards);
   };
