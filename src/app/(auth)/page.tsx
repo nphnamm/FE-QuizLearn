@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { SocialLogin } from "@/components/auth/social-login";
 
-export const dynamic = 'force-dynamic';
-
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
 
