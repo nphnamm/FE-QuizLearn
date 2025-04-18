@@ -51,12 +51,12 @@ export const apiSlice = createApi({
                 // No need to explicitly call loadUser again
               }
             } catch (refreshError) {
-              console.error('Failed to refresh token:', refreshError);
+              console.log('Failed to refresh token:', refreshError);
               // If refresh fails, log the user out
               dispatch(userLoggedOut());
             }
           } else {
-            console.error('Error loading user:', error);
+            console.log('Error loading user:', error);
           }
         }
       },

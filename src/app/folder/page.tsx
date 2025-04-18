@@ -46,7 +46,7 @@ const navigationItems = [
 
 export default function FolderPage() {
   const router = useRouter();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); 
   const [folders, setFolders] = useState<Folder[]>([]);
   const { user } = useSelector((state: any) => state.auth);
   const { data, isLoading, isError } = useGetFoldersByUserIdQuery({});
