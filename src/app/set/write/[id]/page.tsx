@@ -278,7 +278,6 @@ export default function WriteModePage() {
           )}
         >
           <div className="max-w-4xl mx-auto">
-            {/* Progress Bar */}
             <div className="mb-6">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium">Progress</span>

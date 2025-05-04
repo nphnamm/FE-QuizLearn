@@ -29,6 +29,7 @@ import {
 } from "../../../../redux/features/userProgresses/userProgressesApi";
 import { PageLayout } from "@/components/layout/PageLayout";
 import Image from "next/image";
+import StudyAnalytics from "@/components/StudyAnalytics";
 
 type StudyMode = "flashcards" | "learn" | "test";
 type LearnMode = "multiple-choice" | "write" | "flashcard";
@@ -404,7 +405,21 @@ export default function StudySetPage() {
       setIsCompletedSession(true);
     }
   };
+  const [studyStats] = useState({
+    mastery: 60,
+    studyTime: "1m 54s",
+    testScore: "0m",
+    matchingScore: "0m",
+    spacedScore: "0m"
+  });
 
+  // Study progress state
+  const [studyProgress] = useState({
+    newCards: 0,
+    stillLearning: 0,
+    almostDone: 20,
+    mastered: 0
+  });
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -425,7 +440,7 @@ export default function StudySetPage() {
       <PageLayout>
         <div
           className={cn(
-            "transition-all bg-background duration-300 pt-24 px-8",
+            "transition-all bg-background duration-300 p-8 px-8",
           )}
         >
           <div className="flex flex-col items-center">
@@ -489,13 +504,13 @@ export default function StudySetPage() {
               Card {currentCardIndex + 1} of {cards.length + answeredCards.length}
             </div>
             <div className="flex gap-6 mt-12">
-              <Button 
+              <Button
                 onClick={() => handleModeChange("learn")}
                 className="px-8 py-8 text-xl font-bold bg-white border border-primary text-primary shadow-xl hover:shadow-2xl hover:bg-primary hover:text-white transition-all duration-200 rounded-xl"
               >
                 Learn Mode
               </Button>
-              <Button 
+              <Button
                 onClick={() => handleModeChange("test")}
                 className="px-8 py-8 text-xl font-bold bg-white border border-primary text-primary shadow-xl hover:shadow-2xl hover:bg-primary hover:text-white transition-all duration-200 rounded-xl"
               >
@@ -504,6 +519,7 @@ export default function StudySetPage() {
             </div>
           </div>
 
+          <StudyAnalytics/>
           {/* Modal for selecting Learn mode */}
           <Dialog open={showModeSelector} onOpenChange={setShowModeSelector}>
             <DialogContent className="sm:max-w-md">
@@ -629,6 +645,7 @@ export default function StudySetPage() {
               </div>
             </div>
           )}
+
         </div>
       </PageLayout>
     </Protected>

@@ -500,7 +500,7 @@ const page = (props: Props) => {
                       </Button>
                     ) : (
                       <Button onClick={handleNextQuestion}>
-                        {currentCardIndex < cards.length - 1
+                        {currentCardIndex < cards?.length - 1
                           ? "Next Question"
                           : "See Results"}
                       </Button>
