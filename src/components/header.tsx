@@ -17,6 +17,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+
+
+import { Flame } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const navigationItems = [
   { name: "Dashboard", href: "/dashboard", current: true },
@@ -79,16 +88,7 @@ export function Header() {
                 )}
               </svg>
             </button>
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <Image
-                src="/fusion-logo.svg"
-                alt="Fusion"
-                width={24}
-                height={24}
-                className="w-6 h-6"
-              />
-              <span className="text-lg font-semibold">Fusion</span>
-            </Link>
+
             <nav className="flex items-center gap-6">
               {navigationItems.map((item) => (
                 <Link
@@ -110,11 +110,72 @@ export function Header() {
           {/* Right side icons and profile */}
 
           <div className="flex items-center gap-4">
-            <button className="relative p-2 text-foreground hover:bg-muted rounded-full">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full ring-2 ring-background" />
-            </button>
-
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <button className="relative p-2 text-foreground hover:bg-muted rounded-full">
+                  <Bell className="w-5 h-5" />
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full ring-2 ring-background" />
+                </button>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-80 rounded-xl shadow-md p-4 border">
+                <div className="text-xl font-bold text-gray-900">Notifications</div>
+                <p className="text-sm text-gray-600 mb-3">
+                  You have new notifications.
+                </p>
+                <div className="flex flex-col gap-2">
+                  {/* Example notifications */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">New comment on your post</span>
+                    <span className="text-xs text-gray-500">1 min ago</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Your task is due soon</span>
+                    <span className="text-xs text-gray-500">10 min ago</span>
+                  </div>
+                  {/* Add more notifications here */}
+                </div>
+                <Button variant="outline" className="text-xs px-3 py-1 rounded-full mt-4">
+                  View All Notifications
+                </Button>
+              </HoverCardContent>
+            </HoverCard>
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <div className="flex items-center gap-1 cursor-pointer">
+                  <Flame className="text-orange-500 w-5 h-5" />
+                  <span className="font-semibold text-orange-600">39</span>
+                </div>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-80 rounded-xl shadow-md p-4 border">
+                <div className="flex items-center gap-2 mb-2">
+                  <Flame className="text-orange-500 w-6 h-6" />
+                  <span className="text-xl font-bold text-orange-600">39</span>
+                </div>
+                <p className="text-sm text-gray-600 mb-3">
+                  Great job! Come back tomorrow to continue your streak!
+                </p>
+                <div className="flex justify-between mb-3">
+                  {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
+                    <div key={index} className="flex flex-col items-center">
+                      {index === 0 ? (
+                        <Flame className="text-orange-500 w-4 h-4 mb-1" />
+                      ) : (
+                        <div className="w-4 h-4 mb-1" />
+                      )}
+                      <span className="text-xs text-gray-500">{day}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-between">
+                  <Button variant="outline" className="text-xs px-3 py-1 rounded-full">
+                    How to earn a streak
+                  </Button>
+                  <Button className="text-xs px-3 py-1 rounded-full">
+                    View Calendar
+                  </Button>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
             {/* User avatar dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

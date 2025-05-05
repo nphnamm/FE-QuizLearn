@@ -24,7 +24,7 @@ import {
 } from "../../../../../redux/features/userProgresses/userProgressesApi";
 import { useGetCardBySetIdQuery } from "../../../../../redux/features/cards/cardsApi";
 import { Card } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Flame, Loader2 } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -55,6 +55,7 @@ const page = (props: Props) => {
   const [answerSubmitted, setAnswerSubmitted] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [totalCardsInSession, setTotalCardsInSession] = useState(0);
+  const [isNewStreakPopup, setIsNewStreakPopup] = useState(false);
   const { data: answerChoicesData, isLoading: isLoadingAnswerChoices } =
     useGetRandomAnswerChoicesQuery(
       { setId: id, cardId: remainingCards[currentCardIndex]?.id },
@@ -69,6 +70,9 @@ const page = (props: Props) => {
     round: number;
   }[]>([]);
   const [cardResultsByRound, setCardResultsByRound] = useState({});
+  const allDays = ["F", "Sa", "Su", "M", "Tu", "W", "Th"];
+  const streakCount=5
+  const streakDays =["F", "Sa", "Su", "M", "Tu"];
   const [updateProgress, { isLoading: isUpdatingProgress }] =
     useUpdateProgressMutation();
   const handleStartOver = async () => {
@@ -83,7 +87,7 @@ const page = (props: Props) => {
       setId: id as string,
       userId: user?.id,
       sessionType: "multi-choice",
-      completed:false
+      completed: false
 
     });
     setAnsweredCards([]);
@@ -172,13 +176,13 @@ const page = (props: Props) => {
     // Update user progress via API
   };
   // console.log("selectedAnswer", selectedAnswer);
-    // console.log("cardResultsByRound", cardResultsByRound);
+  // console.log("cardResultsByRound", cardResultsByRound);
   const handleStartLearning = async () => {
     const response = await createOrUpdateUserSession({
       setId: id as string,
       userId: user?.id,
       sessionType: "multi-choice",
-      completed:false
+      completed: false
 
     });
     // console.log("response", response);
@@ -206,7 +210,7 @@ const page = (props: Props) => {
       setId: id as string,
       userId: user?.id,
       sessionType: "multi-choice",
-      completed:false
+      completed: false
 
     });
     setShowTestResults(false);
@@ -236,10 +240,13 @@ const page = (props: Props) => {
         setId: id as string,
         userId: user?.id,
         sessionType: "multi-choice",
-        completed:false
+        completed: false
 
       });
       // console.log("res", res);
+      if (res.data?.isNewStreak) {
+        setIsNewStreakPopup(true);
+      }
       if (res?.data?.isCompleted) {
         setIsSessionCompleted(true);
         setShowTestResults(true);
@@ -249,10 +256,11 @@ const page = (props: Props) => {
       // setShowTestResults(true);
     }
   };
+  console.log('is', isNewStreakPopup);
   console.log("cardResultsByRound", cardResultsByRound);
 
   // console.log("cardResult", cardResult);
-   console.log("totalRounds", totalRounds);
+  console.log("totalRounds", totalRounds);
   return (
     <Protected>
       <div className="min-h-screen bg-gray-50">
@@ -534,6 +542,52 @@ const page = (props: Props) => {
                     <Button className="px-8" onClick={handleStartOver}>
                       Start Over
                     </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={isNewStreakPopup} onOpenChange={setIsNewStreakPopup}>
+              <DialogContent className="max-w-sm rounded-xl text-center px-6 py-8">
+                <div className="flex flex-col items-center">
+                  <div className="relative">
+                    <Flame className="text-orange-500 w-16 h-16" />
+                    <span className="absolute inset-0 flex items-center justify-center text-white font-bold text-3xl">
+                      {streakCount}
+                    </span>
+                  </div>
+                  <h2 className="text-xl font-bold text-orange-600 mt-4">{streakCount} day streak!</h2>
+
+                  <div className="mt-6 bg-gray-50 p-4 rounded-lg border">
+                    <div className="flex justify-between gap-2 mb-2">
+                      {allDays.map((day, index) => (
+                        <div key={index} className="flex flex-col items-center">
+                          <div
+                            className={cn(
+                              "w-6 h-6 rounded-full border",
+                              streakDays.includes(day)
+                                ? "bg-orange-500 text-white border-orange-500"
+                                : "bg-white text-gray-400"
+                            )}
+                          >
+                            ✓
+                          </div>
+                          <span
+                            className={cn(
+                              "text-xs mt-1",
+                              streakDays.includes(day)
+                                ? "text-orange-600 font-medium"
+                                : "text-gray-400"
+                            )}
+                          >
+                            {day}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      A <span className="text-orange-600 font-semibold">streak</span> counts how many days you’ve practiced in a row
+                    </p>
                   </div>
                 </div>
               </DialogContent>
