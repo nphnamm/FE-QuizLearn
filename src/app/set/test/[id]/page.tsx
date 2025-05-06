@@ -44,7 +44,7 @@ export default function TestModePage() {
       setSessionId(testData?.sessionId)
     }
     setData(testData);
-  }, []);
+  }, [testData]);
   const [finishTest, { isLoading: isUpdatingCard }] = useFinishTestMutation();
 
 

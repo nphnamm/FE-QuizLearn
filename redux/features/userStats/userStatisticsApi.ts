@@ -2,7 +2,6 @@ import { apiSlice } from "../api/apiSlice";
 
 export const userStatisticsApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
-
         getStudyingSets: builder.query({
             query: () => ({
                 url: `user-stats/getStudyingSets`,
@@ -17,6 +16,13 @@ export const userStatisticsApi = apiSlice.injectEndpoints({
                 credentials: "include" as const,
             }),
         }),
+        getStatisticOfSet: builder.query({
+            query: (setId) => ({
+                url: `user-stats/set/${setId}`,
+                method: "GET",
+                credentials: "include" as const,
+            }),
+        }),
 
     }),
 });
@@ -24,4 +30,5 @@ export const userStatisticsApi = apiSlice.injectEndpoints({
 export const {
     useGetStudyingSetsQuery,
     useGetRecentSetsQuery,
+    useGetStatisticOfSetQuery,
 } = userStatisticsApi;

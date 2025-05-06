@@ -30,6 +30,7 @@ import {
 import { PageLayout } from "@/components/layout/PageLayout";
 import Image from "next/image";
 import StudyAnalytics from "@/components/StudyAnalytics";
+import { useGetStatisticOfSetQuery } from "../../../../redux/features/userStats/userStatisticsApi";
 
 type StudyMode = "flashcards" | "learn" | "test";
 type LearnMode = "multiple-choice" | "write" | "flashcard";
@@ -94,13 +95,14 @@ export default function StudySetPage() {
   const [updateProgress, { isLoading: isUpdatingProgress }] =
     useUpdateProgressMutation();
   const [restart, { isLoading: isRestarting }] = useRestartSessionMutation();
-
+  const [statisticData, setStatisticData] = useState();
   const [isCompletedSession, setIsCompletedSession] = useState(false);
   const { data: answerChoicesData, isLoading: isLoadingAnswerChoices } =
     useGetRandomAnswerChoicesQuery(
       { setId: id, cardId: cards[currentCardIndex]?.id },
       { skip: !cards[currentCardIndex]?.id }
     );
+  const { data: statisticOfSets, isLoading: isLoadingStatisticOfSet } = useGetStatisticOfSetQuery(id, { skip: false });
 
   const [answeredCards, setAnsweredCards] = useState<Card[]>([]);
 
@@ -108,7 +110,10 @@ export default function StudySetPage() {
     if (data) {
       setCards(data.sets);
     }
+
   }, [data]);
+
+
 
   // Ensure data is refreshed when the component mounts
   useEffect(() => {
@@ -405,6 +410,12 @@ export default function StudySetPage() {
       setIsCompletedSession(true);
     }
   };
+  useEffect(() => {
+    if (statisticOfSets && statisticOfSets.data) {
+      setStatisticData(statisticOfSets.data);
+    }
+  }, [statisticOfSets, isLoadingStatisticOfSet]);
+
   const [studyStats] = useState({
     mastery: 60,
     studyTime: "1m 54s",
@@ -433,8 +444,9 @@ export default function StudySetPage() {
   // // }
   // console.log("answerChoicesData", answerChoicesData);
   // console.log("cards", cards);
-  console.log('currentCardIndex', currentAnswerChoices)
-  console.log('first', answerChoicesData)
+  console.log('currentCardIndex', statisticOfSets?.data)
+  console.log('first', statisticData)
+  
   return (
     <Protected>
       <PageLayout>
@@ -519,7 +531,15 @@ export default function StudySetPage() {
             </div>
           </div>
 
-          <StudyAnalytics/>
+          {
+
+          }
+          {
+            statisticOfSets?.data ? <StudyAnalytics data={statisticOfSets.data} /> :
+            
+            <></>
+
+          }
           {/* Modal for selecting Learn mode */}
           <Dialog open={showModeSelector} onOpenChange={setShowModeSelector}>
             <DialogContent className="sm:max-w-md">

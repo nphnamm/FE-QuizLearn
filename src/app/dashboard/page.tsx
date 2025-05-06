@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Image from "next/image";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import Protected from "@/hooks/useProtected";
 import { Bell, Settings, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -122,8 +122,8 @@ export default function DashboardPage() {
                               </svg>
                             </div>
                             <div>
-                              <h3 className="font-medium">{list.title}</h3>
-                              <p className="text-sm text-gray-500">Studied {list.updatedAt}</p>
+                              <h3 className="font-medium">{list.set.title}</h3>
+                              <p className="text-sm text-gray-500">Studied {formatDate(list.createdAt)}</p>
                             </div>
                           </div>
                           <Button variant="outline" size="sm" className="rounded-full">
@@ -145,8 +145,8 @@ export default function DashboardPage() {
                               </svg>
                             </div>
                             <div>
-                              <h3 className="font-medium">{list.title}</h3>
-                              <p className="text-sm text-gray-500">Studied {list.studiedTime}</p>
+                              <h3 className="font-medium">{list?.set?.title}</h3>
+                              <p className="text-sm text-gray-500">Studied {formatDate(list.createdAt)} </p>
                             </div>
                           </div>
                           <Button variant="outline" size="sm" className="rounded-full">
@@ -245,7 +245,7 @@ export default function DashboardPage() {
                     </div>
 
                     <h3 className="text-lg font-bold mb-1">{user.username}</h3>
-                    <p className="text-sm text-gray-500 mb-4">{user.email} | Joined {new Date(user.createdAt).toLocaleDateString()}</p>
+                    <p className="text-sm text-gray-500 mb-4">{user.email} | Joined {formatDate(user.createdAt)}</p>
 
                     <div className="w-full mb-4">
                       <div className="flex justify-between items-center mb-2">

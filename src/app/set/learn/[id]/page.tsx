@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   useCreateOrUpdateUserSessionMutation,
   useGetRandomAnswerChoicesQuery,
@@ -70,9 +70,27 @@ const page = (props: Props) => {
     round: number;
   }[]>([]);
   const [cardResultsByRound, setCardResultsByRound] = useState({});
-  const allDays = ["F", "Sa", "Su", "M", "Tu", "W", "Th"];
-  const streakCount=5
-  const streakDays =["F", "Sa", "Su", "M", "Tu"];
+  const [streakCount, setStreakCount] = useState<number>(0);
+
+  const daysOfWeek = ["M", "Tu", "W", "Th", "F", "Sa", "Su"];
+
+  const weekWithStreak = useMemo(() => {
+    const today = new Date();
+    const todayIndex = today.getDay(); // 0 (Sun) to 6 (Sat)
+
+    // Get 7 days ending today
+    const last7Days = Array.from({ length: 7 }).map((_, i) => {
+      const index = (todayIndex - 6 + i + 7) % 7;
+      return daysOfWeek[index];
+    });
+
+    // Mark the last `streakCount` days BEFORE today
+    return last7Days.map((day, i) => {
+      const isToday = i === 6; // Last item
+      const hasStreak = !isToday && i >= 6 - streakCount;
+      return { day, hasStreak };
+    });
+  }, [streakCount]);
   const [updateProgress, { isLoading: isUpdatingProgress }] =
     useUpdateProgressMutation();
   const handleStartOver = async () => {
@@ -246,6 +264,9 @@ const page = (props: Props) => {
       // console.log("res", res);
       if (res.data?.isNewStreak) {
         setIsNewStreakPopup(true);
+      }
+      if (res.data?.newStreak) {
+        setStreakCount(res.data?.newStreak);
       }
       if (res?.data?.isCompleted) {
         setIsSessionCompleted(true);
@@ -547,7 +568,7 @@ const page = (props: Props) => {
               </DialogContent>
             </Dialog>
 
-            <Dialog open={isNewStreakPopup} onOpenChange={setIsNewStreakPopup}>
+            <Dialog open={true} onOpenChange={setIsNewStreakPopup}>
               <DialogContent className="max-w-sm rounded-xl text-center px-6 py-8">
                 <div className="flex flex-col items-center">
                   <div className="relative">
@@ -560,7 +581,7 @@ const page = (props: Props) => {
 
                   <div className="mt-6 bg-gray-50 p-4 rounded-lg border">
                     <div className="flex justify-between gap-2 mb-2">
-                      {allDays.map((day, index) => (
+                      {/* {allDays.map((day, index) => (
                         <div key={index} className="flex flex-col items-center">
                           <div
                             className={cn(
@@ -577,6 +598,30 @@ const page = (props: Props) => {
                               "text-xs mt-1",
                               streakDays.includes(day)
                                 ? "text-orange-600 font-medium"
+                                : "text-gray-400"
+                            )}
+                          >
+                            {day}
+                          </span>
+                        </div>
+                      ))} */}
+
+                      {weekWithStreak.map(({ day, hasStreak }: any, index: any) => (
+                        <div key={index} className="flex flex-col items-center">
+                          <div
+                            className={cn(
+                              "w-6 h-6 rounded-full border",
+                              hasStreak
+                                ? "bg-orange-500 text-white border-orange-500"
+                                : "bg-white text-gray-400"
+                            )}
+                          >
+                            ✓
+                          </div>
+                          <span
+                            className={cn(
+                              "text-xs mt-1",
+                              hasStreak ? "text-orange-600 font-medium"
                                 : "text-gray-400"
                             )}
                           >

@@ -5,44 +5,49 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import Image from "next/image";
 import Link from "next/link";
-import { Clipboard, Share2 } from "lucide-react";
+import { Clipboard, Share2, CircleUserRound, Coins } from "lucide-react";
 import { useState } from "react";
 import Protected from "@/hooks/useProtected";
 import { cn } from "@/lib/utils";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { useSelector } from "react-redux";
+import { Flame } from "lucide-react";
 
 export default function ProfilePage() {
     const [copied, setCopied] = useState(false);
-    const user = {
-        name: "Nguyễn Nam Hoài Phan",
-        username: "phnam",
-        avatar: "/avatar-placeholder.svg",
-        level: 23,
-        xp: 182,
-        xpMax: 650,
-        followers: 0,
-        following: 0,
-        streak: 2,
-        coins: 585,
-        badges: [
-            {
-                id: 1,
-                name: "Decked Out",
-                icon: "/badges/badge-1.png",
-                progress: 32,
-                total: 50,
-                description: "Flashcard Set(s) Created"
-            }
-        ],
-        inviteCode: "v27mt8",
-        inviteLink: "https://knowt.com/invite/v27mt8"
-    };
+    const user = useSelector((state: any) => state.auth.user);
+    // const user = {
+    //     name: "Nguyễn Nam Hoài Phan",
+    //     username: "phnam",
+    //     avatar: "/avatar-placeholder.svg",
+    //     level: 23,
+    //     xp: 182,
+    //     xpMax: 650,
+    //     followers: 0,
+    //     following: 0,
+    //     streak: 2,
+    //     coins: 585,
+    //     badges: [
+    //         {
+    //             id: 1,
+    //             name: "Decked Out",
+    //             icon: "/badges/badge-1.png",
+    //             progress: 32,
+    //             total: 50,
+    //             description: "Flashcard Set(s) Created"
+    //         }
+    //     ],
+    //     inviteCode: "v27mt8",
+    //     inviteLink: "https://knowt.com/invite/v27mt8"
+    // };
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
+
+    console.log('user', user);
 
     return (
         <Protected>
@@ -60,26 +65,31 @@ export default function ProfilePage() {
 
                                 <div className="flex flex-col items-center sm:items-start sm:flex-row gap-6 pt-8">
                                     <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-background">
-                                        <Image
-                                            src={user.avatar}
+                                        {user?.avatar != null ? <Image
+                                            src={user?.avatar}
                                             alt={user.name}
                                             width={80}
                                             height={80}
                                             className="w-full h-full object-cover"
-                                        />
+                                        /> : <CircleUserRound
+                                            width={80}
+                                            height={80}
+                                            className="w-full h-full object-cover"
+                                        />}
+
                                     </div>
 
                                     <div className="text-center sm:text-left">
-                                        <h1 className="text-2xl font-bold">{user.name}</h1>
+                                        <h1 className="text-2xl font-bold">{user.email}</h1>
                                         <p className="text-muted-foreground">@{user.username}</p>
 
                                         <div className="flex flex-wrap gap-4 mt-3 justify-center sm:justify-start">
                                             <div className="flex items-center gap-1">
-                                                <span className="text-sm font-semibold">{user.followers}</span>
+                                                <span className="text-sm font-semibold">{user.followers ? user.followers : 0}</span>
                                                 <span className="text-sm text-muted-foreground">followers</span>
                                             </div>
                                             <div className="flex items-center gap-1">
-                                                <span className="text-sm font-semibold">{user.following}</span>
+                                                <span className="text-sm font-semibold">{user.following ? user.following : 0}</span>
                                                 <span className="text-sm text-muted-foreground">following</span>
                                             </div>
                                         </div>
@@ -106,7 +116,7 @@ export default function ProfilePage() {
                                                 </div>
                                             </div>
                                             <Progress value={(user.xp / user.xpMax) * 100} className="h-2 mt-3" />
-                                            <p className="text-sm text-muted-foreground mt-1">{user.xp}/{user.xpMax} XP</p>
+                                            <p className="text-sm text-muted-foreground mt-1">{user.experiencePoints}/{user.expToNextLevel} XP</p>
                                         </CardContent>
                                     </Card>
 
@@ -118,7 +128,7 @@ export default function ProfilePage() {
                                                 <Button variant="outline" size="sm">View more</Button>
                                             </div>
 
-                                            {user.badges.map((badge) => (
+                                            {/* {user.badges.map((badge) => (
                                                 <div key={badge.id} className="flex items-center gap-4">
                                                     <div className="relative w-14 h-14 flex-shrink-0">
                                                         <Image
@@ -140,7 +150,7 @@ export default function ProfilePage() {
                                                         </p>
                                                     </div>
                                                 </div>
-                                            ))}
+                                            ))} */}
                                         </CardContent>
                                     </Card>
                                 </div>
@@ -155,13 +165,7 @@ export default function ProfilePage() {
                                                 <h3 className="text-sm font-medium text-muted-foreground">Streak</h3>
                                                 <div className="mt-2 flex items-center">
                                                     <div className="flex items-center justify-center">
-                                                        <Image
-                                                            src="/icons/fire.svg"
-                                                            alt="Streak"
-                                                            width={24}
-                                                            height={24}
-                                                            className="w-6 h-6"
-                                                        />
+                                                        <Flame />
                                                         <span className="text-2xl font-bold ml-1">{user.streak}</span>
                                                     </div>
                                                 </div>
@@ -174,13 +178,7 @@ export default function ProfilePage() {
                                                 <h3 className="text-sm font-medium text-muted-foreground">Coins</h3>
                                                 <div className="mt-2 flex items-center">
                                                     <div className="flex items-center justify-center">
-                                                        <Image
-                                                            src="/icons/coin.svg"
-                                                            alt="Coins"
-                                                            width={24}
-                                                            height={24}
-                                                            className="w-6 h-6"
-                                                        />
+                                                        <Coins />
                                                         <span className="text-2xl font-bold ml-1">{user.coins}</span>
                                                     </div>
                                                 </div>
