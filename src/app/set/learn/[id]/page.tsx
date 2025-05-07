@@ -62,13 +62,15 @@ const page = (props: Props) => {
       { skip: !remainingCards[currentCardIndex]?.id }
     );
   const [totalRounds, setTotalRounds] = useState(1);
-  const [cardResult, setCardResult] = useState<{
-    cardId: string;
-    isCorrect: boolean;
-    term: string;
-    definition: string;
-    round: number;
-  }[]>([]);
+  const [cardResult, setCardResult] = useState<
+    {
+      cardId: string;
+      isCorrect: boolean;
+      term: string;
+      definition: string;
+      round: number;
+    }[]
+  >([]);
   const [cardResultsByRound, setCardResultsByRound] = useState({});
   const [streakCount, setStreakCount] = useState<number>(0);
 
@@ -91,6 +93,7 @@ const page = (props: Props) => {
       return { day, hasStreak };
     });
   }, [streakCount]);
+  console.log("streakCount", streakCount);
   const [updateProgress, { isLoading: isUpdatingProgress }] =
     useUpdateProgressMutation();
   const handleStartOver = async () => {
@@ -105,8 +108,7 @@ const page = (props: Props) => {
       setId: id as string,
       userId: user?.id,
       sessionType: "multi-choice",
-      completed: false
-
+      completed: false,
     });
     setAnsweredCards([]);
     setCardResult([]);
@@ -121,6 +123,7 @@ const page = (props: Props) => {
     setAnswerSubmitted(false);
     setIsCompleted(false);
     setTotalRounds(1);
+    setSessionId(res?.data?.sessionId);
   };
 
   const handleMultipleChoiceSubmit = async () => {
@@ -157,7 +160,10 @@ const page = (props: Props) => {
           sessionId: sessionId,
           cardId: remainingCards[currentCardIndex].id,
           isCorrect,
-          timesAnswered: remainingCards[currentCardIndex].timesAnswered == 1 ? 1 : remainingCards[currentCardIndex].timesAnswered + 1,
+          timesAnswered:
+            remainingCards[currentCardIndex].timesAnswered == 1
+              ? 1
+              : remainingCards[currentCardIndex].timesAnswered + 1,
         });
       } catch (error) {
         toast.error("Failed to update user progress!");
@@ -200,8 +206,7 @@ const page = (props: Props) => {
       setId: id as string,
       userId: user?.id,
       sessionType: "multi-choice",
-      completed: false
-
+      completed: false,
     });
     // console.log("response", response);
     setSessionId(response?.data?.sessionId);
@@ -228,8 +233,7 @@ const page = (props: Props) => {
       setId: id as string,
       userId: user?.id,
       sessionType: "multi-choice",
-      completed: false
-
+      completed: false,
     });
     setShowTestResults(false);
     setTotalCorrect(0);
@@ -258,16 +262,16 @@ const page = (props: Props) => {
         setId: id as string,
         userId: user?.id,
         sessionType: "multi-choice",
-        completed: false
-
+        completed: false,
       });
-      // console.log("res", res);
-      if (res.data?.isNewStreak) {
+      console.log("res", res);
+      if (res.data?.isNewStreak == true) {
         setIsNewStreakPopup(true);
+        if (res.data?.newStreakCount) {
+          setStreakCount(res.data?.newStreakCount);
+        }
       }
-      if (res.data?.newStreak) {
-        setStreakCount(res.data?.newStreak);
-      }
+
       if (res?.data?.isCompleted) {
         setIsSessionCompleted(true);
         setShowTestResults(true);
@@ -277,7 +281,7 @@ const page = (props: Props) => {
       // setShowTestResults(true);
     }
   };
-  console.log('is', isNewStreakPopup);
+  console.log("is", isNewStreakPopup);
   console.log("cardResultsByRound", cardResultsByRound);
 
   // console.log("cardResult", cardResult);
@@ -336,7 +340,10 @@ const page = (props: Props) => {
                     <h2 className="text-xl font-bold mb-4">Your Results</h2>
                     <div className="text-center mb-6">
                       <p className="text-3xl font-bold">
-                        {totalCorrect} / {isSessionCompleted ? cards.length : totalCardsInSession}
+                        {totalCorrect} /{" "}
+                        {isSessionCompleted
+                          ? cards.length
+                          : totalCardsInSession}
                       </p>
                       <p className="text-gray-500">correct answers</p>
                     </div>
@@ -347,14 +354,14 @@ const page = (props: Props) => {
                           Completed Questions
                         </h3>
                         <div className="space-y-3">
-                          {cardResultsByRound && Object.keys(cardResultsByRound).length > 0 ? (
+                          {cardResultsByRound &&
+                          Object.keys(cardResultsByRound).length > 0 ? (
                             Object.entries(cardResultsByRound).map(
                               ([round, results], index) => (
                                 <div key={round}>
                                   <h3>Round {parseInt(round)} Results:</h3>
                                   <ul className="flex flex-col gap-2">
                                     {(results as any[]).map((result, i) => (
-
                                       <div
                                         key={result.id}
                                         className={cn(
@@ -364,7 +371,9 @@ const page = (props: Props) => {
                                             : "bg-red-50 border border-red-200"
                                         )}
                                       >
-                                        <p className="font-medium text-lg text-black">{result.term}</p>
+                                        <p className="font-medium text-lg text-black">
+                                          {result.term}
+                                        </p>
                                         <p className="text-gray-600">
                                           {result.definition}
                                         </p>
@@ -430,7 +439,10 @@ const page = (props: Props) => {
                         Start Over
                       </Button>
                     ) : (
-                      <Button className="w-full mt-6" onClick={resetRemaingCards}>
+                      <Button
+                        className="w-full mt-6"
+                        onClick={resetRemaingCards}
+                      >
                         Continue
                       </Button>
                     )}
@@ -465,7 +477,7 @@ const page = (props: Props) => {
                       className="space-y-4"
                       value={selectedAnswer || ""}
                       onValueChange={setSelectedAnswer}
-                    // disabled={answerSubmitted}
+                      // disabled={answerSubmitted}
                     >
                       {answerChoicesData?.choices.map((choice: any) => {
                         const isSelected = selectedAnswer === choice.id;
@@ -568,7 +580,7 @@ const page = (props: Props) => {
               </DialogContent>
             </Dialog>
 
-            <Dialog open={true} onOpenChange={setIsNewStreakPopup}>
+            <Dialog open={isNewStreakPopup} onOpenChange={setIsNewStreakPopup}>
               <DialogContent className="max-w-sm rounded-xl text-center px-6 py-8">
                 <div className="flex flex-col items-center">
                   <div className="relative">
@@ -577,7 +589,9 @@ const page = (props: Props) => {
                       {streakCount}
                     </span>
                   </div>
-                  <h2 className="text-xl font-bold text-orange-600 mt-4">{streakCount} day streak!</h2>
+                  <h2 className="text-xl font-bold text-orange-600 mt-4">
+                    {streakCount} day streak!
+                  </h2>
 
                   <div className="mt-6 bg-gray-50 p-4 rounded-lg border">
                     <div className="flex justify-between gap-2 mb-2">
@@ -606,32 +620,42 @@ const page = (props: Props) => {
                         </div>
                       ))} */}
 
-                      {weekWithStreak.map(({ day, hasStreak }: any, index: any) => (
-                        <div key={index} className="flex flex-col items-center">
+                      {weekWithStreak.map(
+                        ({ day, hasStreak }: any, index: any) => (
                           <div
-                            className={cn(
-                              "w-6 h-6 rounded-full border",
-                              hasStreak
-                                ? "bg-orange-500 text-white border-orange-500"
-                                : "bg-white text-gray-400"
-                            )}
+                            key={index}
+                            className="flex flex-col items-center"
                           >
-                            ✓
+                            <div
+                              className={cn(
+                                "w-6 h-6 rounded-full border",
+                                hasStreak
+                                  ? "bg-orange-500 text-white border-orange-500"
+                                  : "bg-white text-gray-400"
+                              )}
+                            >
+                              ✓
+                            </div>
+                            <span
+                              className={cn(
+                                "text-xs mt-1",
+                                hasStreak
+                                  ? "text-orange-600 font-medium"
+                                  : "text-gray-400"
+                              )}
+                            >
+                              {day}
+                            </span>
                           </div>
-                          <span
-                            className={cn(
-                              "text-xs mt-1",
-                              hasStreak ? "text-orange-600 font-medium"
-                                : "text-gray-400"
-                            )}
-                          >
-                            {day}
-                          </span>
-                        </div>
-                      ))}
+                        )
+                      )}
                     </div>
                     <p className="text-sm text-gray-600">
-                      A <span className="text-orange-600 font-semibold">streak</span> counts how many days you’ve practiced in a row
+                      A{" "}
+                      <span className="text-orange-600 font-semibold">
+                        streak
+                      </span>{" "}
+                      counts how many days you’ve practiced in a row
                     </p>
                   </div>
                 </div>

@@ -23,9 +23,10 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 
-
 import { Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLogOutQuery } from "../../redux/features/auth/authApi";
+import { useState } from "react";
 
 const navigationItems = [
   { name: "Dashboard", href: "/dashboard", current: true },
@@ -40,13 +41,23 @@ export function Header() {
   const dispatch = useDispatch();
   const { isSidebarOpen } = useSelector((state: RootState) => state.layout);
   const router = useRouter();
+  const [logout, setLogout] = useState(false);
 
+  const {
+    data: logoutData,
+    isLoading: logoutIsLoading,
+    error: logoutError,
+  } = useLogOutQuery(undefined, { skip: !logout });
   const handleToggleSidebar = () => {
     dispatch(toggleSidebar());
   };
-
+  const logOutHandler = async () => {
+    // await signOut();
+    setLogout(true);
+  };
   const handleLogout = () => {
     // TODO: Implement logout functionality
+    logOutHandler();
     console.log("Logging out...");
   };
 
@@ -118,23 +129,32 @@ export function Header() {
                 </button>
               </HoverCardTrigger>
               <HoverCardContent className="w-80 rounded-xl shadow-md p-4 border">
-                <div className="text-xl font-bold text-gray-900">Notifications</div>
+                <div className="text-xl font-bold text-gray-900">
+                  Notifications
+                </div>
                 <p className="text-sm text-gray-600 mb-3">
                   You have new notifications.
                 </p>
                 <div className="flex flex-col gap-2">
                   {/* Example notifications */}
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">New comment on your post</span>
+                    <span className="text-sm text-gray-600">
+                      New comment on your post
+                    </span>
                     <span className="text-xs text-gray-500">1 min ago</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Your task is due soon</span>
+                    <span className="text-sm text-gray-600">
+                      Your task is due soon
+                    </span>
                     <span className="text-xs text-gray-500">10 min ago</span>
                   </div>
                   {/* Add more notifications here */}
                 </div>
-                <Button variant="outline" className="text-xs px-3 py-1 rounded-full mt-4">
+                <Button
+                  variant="outline"
+                  className="text-xs px-3 py-1 rounded-full mt-4"
+                >
                   View All Notifications
                 </Button>
               </HoverCardContent>
@@ -167,7 +187,10 @@ export function Header() {
                   ))}
                 </div>
                 <div className="flex justify-between">
-                  <Button variant="outline" className="text-xs px-3 py-1 rounded-full">
+                  <Button
+                    variant="outline"
+                    className="text-xs px-3 py-1 rounded-full"
+                  >
                     How to earn a streak
                   </Button>
                   <Button className="text-xs px-3 py-1 rounded-full">
@@ -192,11 +215,11 @@ export function Header() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push('/profile')}>
+                <DropdownMenuItem onClick={() => router.push("/profile")}>
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/settings')}>
+                <DropdownMenuItem onClick={() => router.push("/settings")}>
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
@@ -215,6 +238,5 @@ export function Header() {
         </div>
       </div>
     </header>
-
   );
 }

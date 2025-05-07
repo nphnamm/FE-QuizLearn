@@ -7,6 +7,7 @@ import { useDispatch } from "react-redux";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 const GITHUB_CLIENT_ID = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
+import { signIn } from "next-auth/react";
 
 export function SocialLogin() {
   const dispatch = useDispatch();
@@ -25,6 +26,7 @@ export function SocialLogin() {
       </div>
       <div className="flex gap-4">
         <Button
+          onClick={() => signIn("google")}
           variant="outline"
           className="w-full flex items-center justify-center"
         >
@@ -38,6 +40,7 @@ export function SocialLogin() {
           Google
         </Button>
         <Button
+          onClick={() => signIn("github")}
           variant="outline"
           className="w-full flex items-center justify-center"
         >

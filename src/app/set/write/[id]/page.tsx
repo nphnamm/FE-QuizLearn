@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/dashboard/Sidebar";
@@ -26,7 +26,7 @@ import {
   DialogContent,
   DialogTitle,
   DialogHeader,
-  DialogDescription
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 interface Card {
@@ -49,7 +49,7 @@ export default function WriteModePage() {
   const id = params.id as string;
   const { data, isLoading, refetch } = useGetCardBySetIdQuery(id, {
     refetchOnMountOrArgChange: true,
-    skip: false
+    skip: false,
   });
 
   const [cards, setCards] = useState<Card[]>([]);
@@ -67,6 +67,12 @@ export default function WriteModePage() {
   const [createOrUpdateUserSession] = useCreateOrUpdateUserSessionMutation();
   const [updateProgress] = useUpdateProgressMutation();
   const [restart] = useRestartSessionMutation();
+
+  // Create a ref for the input field
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Create a ref for the next button to focus it after answer submission
+  const nextButtonRef = useRef<HTMLButtonElement>(null);
 
   // Initialize the session
   useEffect(() => {
@@ -88,8 +94,7 @@ export default function WriteModePage() {
         userId: user.id,
         setId: id,
         sessionType: "write",
-        completed: false
-
+        completed: false,
       });
 
       setUserSessionId(response.data?.sessionId);
@@ -139,14 +144,17 @@ export default function WriteModePage() {
       currentTerm.includes(userTerm) ||
       userTerm.includes(currentTerm) ||
       (userTerm.length > 3 &&
-        currentTerm.split(" ").some(word =>
-          word.length > 3 && userTerm.includes(word.toLowerCase())));
+        currentTerm
+          .split(" ")
+          .some(
+            (word) => word.length > 3 && userTerm.includes(word.toLowerCase())
+          ));
 
     setIsCorrect(correct);
     setShowFeedback(true);
 
     if (correct) {
-      setCorrectAnswers(prev => prev + 1);
+      setCorrectAnswers((prev) => prev + 1);
     }
 
     // Update progress
@@ -159,7 +167,7 @@ export default function WriteModePage() {
       // Add transition effect when changing cards
       setShowContent(false);
       setTimeout(() => {
-        setCurrentCardIndex(prev => prev + 1);
+        setCurrentCardIndex((prev) => prev + 1);
         setUserAnswer("");
         setAnswerSubmitted(false);
         setShowFeedback(false);
@@ -171,11 +179,10 @@ export default function WriteModePage() {
         userId: user.id,
         setId: id,
         sessionType: "write",
-        completed: false
-
+        completed: false,
       });
 
-      console.log('res', res);
+      console.log("res", res);
       if (res.data.remainingCards.length > 0) {
         setIsCompletedSession(false);
         setCurrentCardIndex(0);
@@ -188,7 +195,6 @@ export default function WriteModePage() {
       } else {
         setIsCompletedSession(true);
       }
-
     }
   };
 
@@ -203,15 +209,14 @@ export default function WriteModePage() {
 
     if (userSessionId) {
       restart({ sessionId: userSessionId });
-
     }
     const res = await createOrUpdateUserSession({
       userId: user.id,
       setId: id,
       sessionType: "write",
-      completed: false
-
+      completed: false,
     });
+    setUserSessionId(res.data?.sessionId);
     setCards(res.data.remainingCards);
   };
 
@@ -226,6 +231,23 @@ export default function WriteModePage() {
       </div>
     );
   }
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter") {
+        if (answerSubmitted && nextButtonRef.current) {
+          // If answer is already submitted, go to next card
+          nextButtonRef.current.focus();
+        } else {
+          inputRef.current?.focus();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [answerSubmitted]);
+
+  // Focus the next button after answer is submitted
 
   return (
     <Protected>
@@ -316,10 +338,12 @@ export default function WriteModePage() {
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              const fallbackEl = document.createElement('div');
-                              fallbackEl.className = 'flex items-center justify-center h-full text-gray-400';
-                              fallbackEl.innerText = 'Image could not be loaded';
+                              target.style.display = "none";
+                              const fallbackEl = document.createElement("div");
+                              fallbackEl.className =
+                                "flex items-center justify-center h-full text-gray-400";
+                              fallbackEl.innerText =
+                                "Image could not be loaded";
                               target.parentElement?.appendChild(fallbackEl);
                             }}
                           />
@@ -335,15 +359,15 @@ export default function WriteModePage() {
                       <Input
                         id="answer"
                         value={userAnswer}
+                        ref={inputRef}
                         onChange={(e) => setUserAnswer(e.target.value)}
                         placeholder="Type your answer here..."
                         className="h-12"
                         disabled={answerSubmitted}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !answerSubmitted) {
+                          if (e.key === "Enter" && !answerSubmitted) {
+                            e.preventDefault();
                             handleSubmitAnswer();
-                          } else if (e.key === 'Enter' && answerSubmitted) {
-                            handleNextCard();
                           }
                         }}
                       />
@@ -392,7 +416,7 @@ export default function WriteModePage() {
                       {!answerSubmitted ? (
                         <Button onClick={handleSubmitAnswer}>Submit</Button>
                       ) : (
-                        <Button onClick={handleNextCard}>
+                        <Button ref={nextButtonRef} onClick={handleNextCard}>
                           {currentCardIndex < cards.length - 1
                             ? "Next Card"
                             : "Finish"}
@@ -421,8 +445,8 @@ export default function WriteModePage() {
                   {correctAnswers === cards.length
                     ? "Perfect score! Great job! 🎉"
                     : correctAnswers > cards.length / 2
-                      ? "Well done! Keep practicing to improve. 👍"
-                      : "Keep studying to improve your score. 📚"}
+                    ? "Well done! Keep practicing to improve. 👍"
+                    : "Keep studying to improve your score. 📚"}
                 </p>
                 <div className="flex justify-center gap-4">
                   <Button variant="outline" onClick={handleBackToDashboard}>

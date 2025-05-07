@@ -12,6 +12,7 @@ import { useSelector } from "react-redux";
 import ErrorBoundary from "@/hooks/errorBoundary";
 import { useLoadUserQuery } from "../../redux/features/api/apiSlice";
 import AuthProvider from "@/providers/AuthProvider";
+import { SessionProvider } from "next-auth/react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -40,17 +41,19 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ReduxProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <AuthProvider>
-              <Custom>{children}</Custom>
-            </AuthProvider>
-            <Toaster />
-          </ThemeProvider>
+          <SessionProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <AuthProvider>
+                <Custom>{children}</Custom>
+              </AuthProvider>
+              <Toaster />
+            </ThemeProvider>
+          </SessionProvider>
         </ReduxProvider>
       </body>
     </html>
