@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, LogOut, Menu, Settings, User } from "lucide-react";
+import { Bell, LogOut, Menu, Settings, User, Flame } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -22,8 +22,8 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-
-import { Flame } from "lucide-react";
+import { HowToEarnStreakDialog } from "./streak/HowToEarnStreakDialog";
+import { useGetUserStreakQuery } from "../../redux/features/userStats/userStatisticsApi";
 import { Button } from "@/components/ui/button";
 import { useLogOutQuery } from "../../redux/features/auth/authApi";
 import { useState } from "react";
@@ -37,7 +37,6 @@ const navigationItems = [
   { name: "Notes", href: "/notes", current: false },
 ];
 
-
 export function Header() {
   const dispatch = useDispatch();
   const { isSidebarOpen } = useSelector((state: RootState) => state.layout);
@@ -49,6 +48,39 @@ export function Header() {
     isLoading: logoutIsLoading,
     error: logoutError,
   } = useLogOutQuery(undefined, { skip: !logout });
+
+  const { data: streakData } = useGetUserStreakQuery({});
+  const currentStreak = streakData?.streak?.find((streak: any) => streak.isActive)?.streakLength || 0;
+
+  // Get streak days for the current week
+  const getStreakDaysForWeek = () => {
+    if (!streakData?.streak) return Array(7).fill(false);
+    
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay()); // Start from Sunday
+    
+    return streakData.streak.flatMap((streak: any) => {
+      const startDate = new Date(streak.startDate);
+      const endDate = streak.endDate ? new Date(streak.endDate) : new Date();
+      
+      const days = Array(7).fill(false);
+      const currentDate = new Date(startDate);
+      
+      while (currentDate <= endDate) {
+        const dayIndex = currentDate.getDay();
+        if (currentDate >= startOfWeek && currentDate <= today) {
+          days[dayIndex] = true;
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      
+      return days;
+    });
+  };
+
+  const streakDays = getStreakDaysForWeek();
+
   const handleToggleSidebar = () => {
     dispatch(toggleSidebar());
   };
@@ -100,6 +132,17 @@ export function Header() {
                 )}
               </svg>
             </button>
+
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/fusion-logo.svg"
+                alt="QuizLearn Logo"
+                width={32}
+                height={32}
+                className="w-8 h-8"
+              />
+              <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">QuizLearn</span>
+            </Link>
 
             <nav className="flex items-center gap-6">
               {navigationItems.map((item) => (
@@ -164,13 +207,13 @@ export function Header() {
               <HoverCardTrigger asChild>
                 <div className="flex items-center gap-1 cursor-pointer">
                   <Flame className="text-orange-500 w-5 h-5" />
-                  <span className="font-semibold text-orange-600">39</span>
+                  <span className="font-semibold text-orange-600">{currentStreak}</span>
                 </div>
               </HoverCardTrigger>
               <HoverCardContent className="w-80 rounded-xl shadow-md p-4 border">
                 <div className="flex items-center gap-2 mb-2">
                   <Flame className="text-orange-500 w-6 h-6" />
-                  <span className="text-xl font-bold text-orange-600">39</span>
+                  <span className="text-xl font-bold text-orange-600">{currentStreak}</span>
                 </div>
                 <p className="text-sm text-gray-600 mb-3">
                   Great job! Come back tomorrow to continue your streak!
@@ -178,7 +221,7 @@ export function Header() {
                 <div className="flex justify-between mb-3">
                   {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
                     <div key={index} className="flex flex-col items-center">
-                      {index === 0 ? (
+                      {streakDays[index] ? (
                         <Flame className="text-orange-500 w-4 h-4 mb-1" />
                       ) : (
                         <div className="w-4 h-4 mb-1" />
@@ -188,13 +231,18 @@ export function Header() {
                   ))}
                 </div>
                 <div className="flex justify-between">
-                  <Button
-                    variant="outline"
+                  <HowToEarnStreakDialog>
+                    <Button
+                      variant="outline"
+                      className="text-xs px-3 py-1 rounded-full"
+                    >
+                      How to earn a streak
+                    </Button>
+                  </HowToEarnStreakDialog>
+                  <Button 
                     className="text-xs px-3 py-1 rounded-full"
+                    onClick={() => router.push("/streak")}
                   >
-                    How to earn a streak
-                  </Button>
-                  <Button className="text-xs px-3 py-1 rounded-full">
                     View Calendar
                   </Button>
                 </div>

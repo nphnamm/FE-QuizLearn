@@ -9,11 +9,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { cn, formatDate } from "@/lib/utils";
 import Protected from "@/hooks/useProtected";
-import { Bell, Settings, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
+import { Bell, Settings, ChevronLeft, ChevronRight, ChevronUp, Flame } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { useSelector } from "react-redux";
-import { useGetRecentSetsQuery, useGetStudyingSetsQuery } from "../../../redux/features/userStats/userStatisticsApi";
+import { useGetRecentSetsQuery, useGetStudyingSetsQuery, useGetUserStreakQuery } from "../../../redux/features/userStats/userStatisticsApi";
+import { Calendar } from "@/components/ui/calendar";
 
 const navigationItems = [
   { name: "Dashboard", href: "/dashboard", current: true },
@@ -30,8 +31,13 @@ export default function DashboardPage() {
   const { user } = useSelector((state: any) => state.auth);
   const { data: studyingSets, isLoading: isStudyingSetsLoading, isError: isStudyingSetsError } = useGetStudyingSetsQuery({});
   const { data: recentSets, isLoading: isRecentSetsLoading, isError: isRecentSetsError } = useGetRecentSetsQuery({});
+  const { data: streakData, isLoading: isStreakLoading } = useGetUserStreakQuery({});
 
   const percentToNextLevel = user.experiencePoints / user.expToNextLevel * 100;
+
+  // Calculate total streak length
+  const totalStreakLength = streakData?.streak?.reduce((total: number, streak: any) => total + streak.streakLength, 0) || 0;
+  const currentStreak = streakData?.streak?.find((streak: any) => streak.isActive)?.streakLength || 0;
 
   console.log('user', user);
   console.log('recentSets', recentSets);
@@ -54,8 +60,27 @@ export default function DashboardPage() {
   const currentYear = currentDate.getFullYear();
   const daysOfWeek = ["S", "M", "T", "W", "T", "F", "S"];
 
-  // Mock data for highlighted dates in the calendar (dates with study sessions)
-  const highlightedDates = [3, 7, 10, 12, 14, 15];
+  // Get streak days for the selected month
+  const getStreakDaysForMonth = (month: number, year: number) => {
+    if (!streakData?.streak) return [];
+
+    return streakData.streak.flatMap((streak: any) => {
+      const startDate = new Date(streak.startDate);
+      const endDate = streak.endDate ? new Date(streak.endDate) : new Date();
+
+      const days = [];
+      const currentDate = new Date(startDate);
+
+      while (currentDate <= endDate) {
+        if (currentDate.getMonth() === month && currentDate.getFullYear() === year) {
+          days.push(currentDate.getDate());
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+
+      return days;
+    });
+  };
 
   // Get days in current month and first day of month
   const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
@@ -68,6 +93,7 @@ export default function DashboardPage() {
 
   // Calendar days array
   const calendarDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const streakDays = getStreakDaysForMonth(month, year);
 
   // Previous and next month navigation
   const goToPreviousMonth = () => {
@@ -172,10 +198,8 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-2">
                       <h3 className="font-medium">{currentMonth} {currentYear}</h3>
                       <div className="flex items-center text-orange-500">
-                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                        </svg>
-                        <span>2</span>
+                        <Flame className="h-5 w-5" />
+                        <span>{currentStreak}</span>
                       </div>
                     </div>
 
@@ -206,7 +230,7 @@ export default function DashboardPage() {
                     ))}
 
                     {calendarDays.map((day) => {
-                      const isHighlighted = highlightedDates.includes(day);
+                      const isStreakDay = streakDays.includes(day);
                       const isSelected = selectedDate === day;
                       const isToday = new Date().getDate() === day &&
                         new Date().getMonth() === month &&
@@ -218,10 +242,10 @@ export default function DashboardPage() {
                           onClick={() => handleDateSelect(day)}
                           className={cn(
                             "aspect-square flex items-center justify-center text-sm rounded-full cursor-pointer transition-colors",
-                            isHighlighted && !isSelected && !isToday && "bg-orange-100 text-orange-500",
+                            isStreakDay && !isSelected && !isToday && "bg-orange-100 text-orange-500",
                             isToday && !isSelected && "bg-orange-500 text-white",
                             isSelected && "bg-blue-500 text-white ring-2 ring-blue-300",
-                            !isHighlighted && !isSelected && !isToday && "hover:bg-gray-100"
+                            !isStreakDay && !isSelected && !isToday && "hover:bg-gray-100"
                           )}
                         >
                           {day}
@@ -262,6 +286,17 @@ export default function DashboardPage() {
                       <p className="text-sm text-gray-500 mt-1">{user.experiencePoints}/{user.expToNextLevel} XP</p>
                     </div>
 
+                    {/* Streak Information */}
+                    <div className="w-full mb-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="font-medium">Streak</h4>
+                        <div className="flex items-center gap-1 bg-orange-100 text-orange-600 px-2 py-1 rounded-full">
+                          <span className="text-xs">{currentStreak} days</span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-500">Total streak: {totalStreakLength} days</p>
+                    </div>
+
                     <Button variant="outline" className="w-full">View badges</Button>
                   </div>
                 </Card>
@@ -269,6 +304,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+
       </PageLayout>
     </Protected>
   );

@@ -1,25 +1,9 @@
-"use client";
 import type { Metadata } from "next";
 import { Inter, Josefin_Sans, Poppins } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/providers/theme-provider";
-import { ReduxProvider } from "@/providers/ReduxProvider";
-import { Header } from "@/components/header";
-import { Toaster } from "@/components/providers/toaster";
-import { useEffect, useState } from "react";
-import Loader from "@/components/loader/Loader";
-import { useSelector } from "react-redux";
-import ErrorBoundary from "@/hooks/errorBoundary";
-import { useLoadUserQuery } from "../../redux/features/api/apiSlice";
-import AuthProvider from "@/providers/AuthProvider";
-import { SessionProvider } from "next-auth/react";
+import ClientLayout from "./ClientLayout";
 
 const inter = Inter({ subsets: ["latin"] });
-
-// export const metadata: Metadata = {
-//   title: "QuizLearn",
-//   description: "Learn with quiz",
-// };
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -32,6 +16,17 @@ const josefin = Josefin_Sans({
   weight: ["400", "500", "600", "700"],
   variable: "--font-Josefin",
 });
+
+export const metadata: Metadata = {
+  title: "QuizLearn",
+  description: "Learn with quiz",
+  icons: {
+    icon: '/fusion-logo.svg',
+    shortcut: '/fusion-logo.svg',
+    apple: '/fusion-logo.svg',
+  },
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -40,32 +35,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ReduxProvider>
-          <SessionProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <AuthProvider>
-                <Custom>{children}</Custom>
-              </AuthProvider>
-              <Toaster />
-            </ThemeProvider>
-          </SessionProvider>
-        </ReduxProvider>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );
 }
-
-const Custom: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isLoading } = useLoadUserQuery({});
-
-  return (
-    <>
-      <ErrorBoundary>{isLoading ? <Loader /> : <>{children} </>}</ErrorBoundary>
-    </>
-  );
-};

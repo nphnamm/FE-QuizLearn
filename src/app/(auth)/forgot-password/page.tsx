@@ -114,7 +114,7 @@ export default function ForgotPasswordPage() {
       toast.error(message);
       return;
     }
-
+ 
     try {
       const response = await fetch("/api/auth/verify-reset-otp", {
         method: "POST",

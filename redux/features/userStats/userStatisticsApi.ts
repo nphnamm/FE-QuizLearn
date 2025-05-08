@@ -23,7 +23,13 @@ export const userStatisticsApi = apiSlice.injectEndpoints({
                 credentials: "include" as const,
             }),
         }),
-
+        getUserStreak: builder.query({
+            query: () => ({
+                url: `user-streaks/streak`,
+                method: "GET",
+                credentials: "include" as const,
+            }),
+        }),
     }),
 });
 
@@ -31,4 +37,5 @@ export const {
     useGetStudyingSetsQuery,
     useGetRecentSetsQuery,
     useGetStatisticOfSetQuery,
+    useGetUserStreakQuery,
 } = userStatisticsApi;
