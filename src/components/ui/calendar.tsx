@@ -31,9 +31,13 @@ function Calendar({
                 ),
                 nav_button_previous: "absolute left-1",
                 nav_button_next: "absolute right-1",
+
+                row: "grid grid-cols-7 gap-20 mt-4",
+                cell: "flex items-center justify-center w-14 h-14",
+                head_row: "grid grid-cols-7 gap-24 ml-4",
                 day: cn(
                     buttonVariants({ variant: "ghost" }),
-                    "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-muted hover:text-accent-foreground focus:bg-muted focus:text-accent-foreground"
+                    "h-14 w-14 font-normal aria-selected:opacity-100 hover:bg-muted hover:text-accent-foreground focus:bg-muted focus:text-accent-foreground"
                 ),
                 day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
                 day_today: "bg-accent text-accent-foreground",
