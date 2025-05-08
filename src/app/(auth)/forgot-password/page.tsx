@@ -15,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useForgotPasswordMutation } from "../../../../redux/features/auth/authApi";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -23,7 +24,7 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
-
+  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
   const handleOtpChange = (index: number, value: string) => {
     if (value.length > 1) {
       value = value[0];
@@ -54,27 +55,27 @@ export default function ForgotPasswordPage() {
     setError("");
 
     const formData = new FormData(e.currentTarget);
-    const emailValue = formData.get("email") as string;
-    setEmail(emailValue);
+    const email = formData.get("email") as string;
+    setEmail(email);
 
     try {
-      const response = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: emailValue }),
-      });
+      console.log('Sending forgot password request with email:', email);
+      const response = await forgotPassword(email);
+      console.log('Forgot password response:', response);
 
-      if (response.ok) {
+      if ('data' in response) {
         setStep("otp");
         toast.success("Reset code sent to your email");
-      } else {
-        const data = await response.json();
-        setError(data.message || "Failed to send reset email");
-        toast.error(data.message || "Failed to send reset email");
+      } else if ('error' in response) {
+        console.log('Error response:', response.error);
+        const errorMessage = response.error && typeof response.error === 'object' && 'status' in response.error
+          ? "Please provide your email"
+          : "Failed to send reset email";
+        setError(errorMessage);
+        toast.error(errorMessage);
       }
     } catch (err) {
+      console.log('Caught error:', err);
       const message = "An error occurred while sending reset email";
       setError(message);
       toast.error(message);

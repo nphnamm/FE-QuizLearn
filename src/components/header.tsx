@@ -37,6 +37,7 @@ const navigationItems = [
   { name: "Notes", href: "/notes", current: false },
 ];
 
+
 export function Header() {
   const dispatch = useDispatch();
   const { isSidebarOpen } = useSelector((state: RootState) => state.layout);

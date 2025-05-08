@@ -11,6 +11,20 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
+  callbacks: {
+    async jwt({ token, account }) {
+        // Lưu provider vào token khi người dùng đăng nhập
+        if (account) {
+            token.provider = account.provider; // "google" hoặc "github"
+        }
+        return token;
+    },
+    async session({ session, token }) {
+        // Gán provider từ token vào session
+        session.user.provider = token.provider || null;
+        return session;
+    },
+},
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: "/auth/signin",

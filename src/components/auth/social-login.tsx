@@ -7,10 +7,18 @@ import { useDispatch } from "react-redux";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 const GITHUB_CLIENT_ID = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
-import { signIn } from "next-auth/react";
-
+import { signIn, useSession } from "next-auth/react";
+interface SessionUser {
+  email?: string;
+  name?: string;
+  image?: string;
+  provider?: string | null;
+}
 export function SocialLogin() {
   const dispatch = useDispatch();
+  const { data } = useSession();
+  const socialUser = data?.user as SessionUser | undefined;
+  console.log("socialUser", socialUser);
 
   return (
     <div className="flex flex-col gap-4 mt-6">

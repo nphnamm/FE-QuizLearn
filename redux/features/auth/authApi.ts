@@ -67,7 +67,7 @@ export const authApi = apiSlice.injectEndpoints({
               user: result?.data.user,
             })
           );
-          
+
           // Start the token refresh timer after login
           startTokenRefreshTimer();
         } catch (error: any) {
@@ -77,7 +77,7 @@ export const authApi = apiSlice.injectEndpoints({
     }),
     socialAuth: builder.mutation({
       query: ({ email, name, avatar, provider }) => ({
-        url: "social-auth",
+        url: "auth/social-auth",
         method: "POST",
         body: {
           email,
@@ -105,7 +105,7 @@ export const authApi = apiSlice.injectEndpoints({
     }),
     logOut: builder.query({
       query: () => ({
-        url: "logout",
+        url: "auth/logout",
         method: "GET",
         credentials: "include" as const,
       }),
@@ -114,6 +114,22 @@ export const authApi = apiSlice.injectEndpoints({
           dispatch(userLoggedOut());
         } catch (error: any) {
           // console.log(error);
+        }
+      },
+    }),
+    forgotPassword: builder.mutation({
+      query: (email) => ({
+        url: "auth/forgot-password",
+        method: "POST",
+        body: { email },
+        credentials: "include",
+      }),
+      async onQueryStarted(arg, { queryFulfilled, dispatch }) {
+        try {
+          const result = await queryFulfilled;
+          console.log("Full API response:", result);
+        } catch (error: any) {
+          console.log(error);
         }
       },
     }),
@@ -126,4 +142,5 @@ export const {
   useLoginMutation,
   useSocialAuthMutation,
   useLogOutQuery,
+  useForgotPasswordMutation,
 } = authApi;
